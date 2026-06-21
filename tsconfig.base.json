@@ -2,6 +2,7 @@
   "compilerOptions": {
     // Environment setup & latest features
     "lib": ["ESNext"],
+    "types" : ["bun"], // remove or add it later on (depends on the environment) ??
     "target": "ESNext",
     "module": "Preserve",
     "moduleDetection": "force",
