@@ -15,11 +15,14 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@bloom/database": "workspace:*",
     "@bloom/shared": "workspace:*",
     "@opentui/core": "^0.2.15",
     "@opentui/react": "^0.2.15",
+    "eventsource-parser": "^3.1.0",
     "hono": "^4.12.27",
     "opentui-spinner": "^0.0.7",
+    "pretty-ms": "^9.3.0",
     "react": "^19.2.6",
     "react-router": "^8.0.1",
     "zod": "^4.4.3"
