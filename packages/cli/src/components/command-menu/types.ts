@@ -1,15 +1,16 @@
+import type { Mode } from "@bloom/database/enums";
 import type { DialogContextValue } from "../../providers/dialog";
 import type { ToastContextValue } from "../../providers/toast";
-// import type { ModeType, SupportedChatModelId } from "@nightcode/shared";
+import type { SupportedChatModelId } from "@bloom/shared";
 
 export type CommandContext = {
   exit: () => void;
   toast: ToastContextValue;
   dialog: DialogContextValue;
-//   navigate: (path: string) => void;
-//   mode: ModeType;
-//   setMode: (mode: ModeType) => void;
-//   setModel: (model: SupportedChatModelId) => void;
+  navigate: (path: string) => void;
+  mode: Mode;
+  setMode: (mode: Mode) => void;
+  setModel: (model: SupportedChatModelId) => void;
 };
 
 export type Command = {
