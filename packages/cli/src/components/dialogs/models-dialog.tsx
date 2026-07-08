@@ -8,9 +8,9 @@ type ModelsDialogContentProps = {
   onSelectModel: (modelId: SupportedChatModelId) => void;
 };
 
-export const ModelsDialogContent = ({ 
-  models, 
-  onSelectModel 
+export const ModelsDialogContent = ({
+  models,
+  onSelectModel
 }: ModelsDialogContentProps) => {
   const dialog = useDialog();
 
