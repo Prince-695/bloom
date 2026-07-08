@@ -1,4 +1,5 @@
-import { ThemeDialogContent } from "../dialogs";
+import { SUPPORTED_CHAT_MODELS } from "@bloom/shared";
+import { AgentsDialogContent, ModelsDialogContent, SessionsDialogContent, ThemeDialogContent } from "../dialogs";
 import type { Command } from "./types";
 
 export const COMMANDS: Command[] = [
@@ -16,9 +17,9 @@ export const COMMANDS: Command[] = [
         value: "/agents",
         action: (ctx) => {
             ctx.dialog.open({
-                title: "Select Mode",
-                children: <text>Agent selection coming soon...</text>
-            });
+                title: "Select Agent",
+                children: <AgentsDialogContent currentMode={ctx.mode} onSelectMode={ctx.setMode}/>
+            })
         },
     },
     {
@@ -28,8 +29,8 @@ export const COMMANDS: Command[] = [
         action: (ctx) => {
             ctx.dialog.open({
                 title: "Select Model",
-                children: <text>Model selection coming soon...</text>
-            });
+                children: <ModelsDialogContent models={SUPPORTED_CHAT_MODELS.map((model) => model.id)} onSelectModel={ctx.setModel} />
+            })
         },
     },
     {
@@ -37,7 +38,10 @@ export const COMMANDS: Command[] = [
         description: "Browse past sessions",
         value: "/sessions",
         action: (ctx) => {
-            ctx.toast.show({ message: "Loading past sessions..." });
+            ctx.dialog.open({
+                title: "Sessions",
+                children: <SessionsDialogContent />
+            })
         },
     },
     {
