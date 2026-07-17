@@ -1,5 +1,0 @@
-Change: Tidy header component
-
-Files touched: packages/cli/src/components/header.tsx
-
-Description: Small prop-type clarification and visual text tweak.
