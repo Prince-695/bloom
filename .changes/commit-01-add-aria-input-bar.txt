@@ -1,0 +1,5 @@
+Change: Add aria-label to input bar
+
+Files touched: packages/cli/src/components/input-bar.tsx
+
+Description: Suggests adding `aria-label` to the main input for improved accessibility.
