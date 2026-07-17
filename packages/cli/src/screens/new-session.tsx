@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { z } from "zod";
-import { DEFAULT_CHAT_MODEL_ID } from "@bloom/shared";
+import { Mode } from "@bloom/database/enums";
 import { useNavigate, useLocation } from "react-router";
 import { useTheme } from "../providers/theme";
 import { SessionShell } from "../components/session-shell";
@@ -12,8 +12,8 @@ import { getErrorMessage } from "../lib/http-errors";
 
 const newSessionStateSchema = z.object({
   message: z.string(),
-//   mode: modeSchema,
-//   model: z.string(),
+  mode: z.enum(Mode),
+  model: z.string(),
 });
 
 export function NewSession() {
@@ -51,8 +51,8 @@ export function NewSession() {
                         initialMessage: {
                             role: "USER",
                             content: state.message,
-                            mode: "BUILD",
-                            model: DEFAULT_CHAT_MODEL_ID,
+                            mode: state.mode,
+                            model: state.model
                         },
                     },
                 });
@@ -86,7 +86,7 @@ export function NewSession() {
 
     return (
         <SessionShell onSubmit={() => {}} inputDisabled loading>
-            <UserMessage message={state.message} />
+            <UserMessage message={state.message} mode={state.mode} />
         </SessionShell>
     );
 };

@@ -1,5 +1,11 @@
-import { useRef, useCallback, useEffect } from "react";
-import type { TextareaRenderable } from "@opentui/core";
+import { readdir } from "node:fs/promises";
+import { isAbsolute, relative, resolve } from "node:path";
+
+import { useRef, useState, useCallback, useEffect, type RefObject } from "react";
+
+import { TextAttributes } from "@opentui/core";
+
+import type { TextareaRenderable, ScrollBarRenderable } from "@opentui/core";
 import { useKeyboard, useRenderer } from "@opentui/react";
 import { useNavigate } from "react-router";
 import type { KeyBinding } from "@opentui/core";
@@ -14,6 +20,23 @@ import { useDialog } from "../providers/dialog";
 import { useTheme } from "../providers/theme";
 import { usePromptConfig } from "../providers/prompt-config";
 import { Mode } from "@bloom/database/enums";
+
+const MAX_VISIBLE_MENTIONS = 8;
+const CURRENT_DIRECTORY = process.cwd();
+const MAX_FALLBACK_MENTION_CANDIDATES = 32;
+const MENTION_QUERY_CHARACTER = /[A-Za-z0-9._/-]/;
+const RECURSIVE_MENTION_IGNORE_DIRECTORIES = new Set(["node_modules"]);
+
+type MentionMatch = {
+    start: number;
+    end: number;
+    query: string;
+};
+
+type MentionCandidate = {
+    path: string;
+    kind: "file" | "directory";
+};
 
 type Props = {
     onSubmit: (value: string) => void;
