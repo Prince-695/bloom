@@ -14,6 +14,7 @@
         "@ai-sdk/anthropic": "^4.0.8",
         "@ai-sdk/google": "^4.0.8",
         "@ai-sdk/openai": "^4.0.7",
+        "@ai-sdk/provider-utils": "^5.0.7",
         "@bloom/database": "workspace:*",
         "@bloom/shared": "workspace:*",
         "@hono/zod-validator": "^0.8.0",
