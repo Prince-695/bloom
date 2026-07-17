@@ -11,7 +11,19 @@ import {
 } from "@bloom/shared";
 import { is } from "zod/v4/locales/index.js";
 
-export type ClientMessagePart = { type: "text"; text: string };
+export type ClientToolCallPart = {
+    type: "tool-call";
+    id: string;
+    name: string;
+    args: Record<string, unknown>;
+    result?: string;
+    status?: "calling" | "done";
+}
+
+export type ClientMessagePart =
+    | { type: "reasoning"; text: string }
+    | ClientToolCallPart
+    | { type: "text"; text: string };
 
 export type Message = 
     | { 
@@ -70,7 +82,6 @@ type RunStreamParams = {
 export function useChat(
     sessionId: string,
     initialMessages: Message[],
-
 ) {
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [streaming, setStreaming] = useState<StreamingState>({ status: "idle" });
@@ -129,7 +140,7 @@ export function useChat(
                     interrupted: true,
                 },
             ]);
-    },[updatedMessages]);
+    },[updatedMessages  ]);
 
     const clearStream = useCallback((requestId: string) => {
         if (!isActiveRequest(requestId)) return;
@@ -184,6 +195,37 @@ export function useChat(
             }
 
             switch (event.type) {
+                case "reasoning-delta": {
+                    const last = parts[parts.length - 1];
+                    if (last && last.type === "reasoning") {
+                        last.text += event.text;
+                    } else {
+                        parts.push({ type: "reasoning", text: event.text });
+                    }
+                    emitParts(activeStream.reqeustId, parts);
+                    break;
+                }
+                case "tool-call": 
+                    parts.push({
+                        type: "tool-call",
+                        id: event.toolCallId,
+                        name: event.toolName,
+                        args: event.args,
+                        status: "calling",
+                    });
+                    emitParts(activeStream.reqeustId, parts);
+                    break;
+                case "tool-result":{
+                    const tc = parts.find(
+                        (p): p is ClientToolCallPart => p.type === "tool-call" && p.id === event.toolCallId
+                    );
+                    if (tc) {
+                        tc.result = event.result;
+                        tc.status = "done";
+                    }
+                    emitParts(activeStream.reqeustId, parts);
+                    break;
+                }
                 case "text-delta": {
                     const last = parts[parts.length - 1];
                     if (last && last.type === "text") {
