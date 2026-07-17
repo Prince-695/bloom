@@ -75,6 +75,14 @@ export const SUPPORTED_CHAT_MODELS = [
       inputUsdPerMillionTokens: 1,
       outputUsdPerMillionTokens: 3,
     }
+  },
+  {
+    id: "gemini-2.5-flash",
+    provider: "google",
+    pricing: {
+      inputUsdPerMillionTokens: 0.5,
+      outputUsdPerMillionTokens: 1.5,
+    }
   }
 ] as const satisfies readonly SupportedChatModelDefinition[];
 
