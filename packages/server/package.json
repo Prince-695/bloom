@@ -17,6 +17,7 @@
         "@ai-sdk/provider-utils": "^5.0.7",
         "@bloom/database": "workspace:*",
         "@bloom/shared": "workspace:*",
+        "@clerk/backend": "^3.12.0",
         "@hono/zod-validator": "^0.8.0",
         "@sentry/bun": "^10.63.0",
         "@sentry/hono": "^10.63.0",
