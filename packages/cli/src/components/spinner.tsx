@@ -1,5 +1,4 @@
 import "opentui-spinner/react";
-// import { Mode, type ModeType } from "@nightcode/shared";
 import { useTheme } from "../providers/theme";
 import { Mode } from "@bloom/database/enums";
 

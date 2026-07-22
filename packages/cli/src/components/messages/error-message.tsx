@@ -2,7 +2,6 @@
 import { EmptyBorder } from "../border";
 import { useTheme } from "../../providers/theme";
 // import type { Message } from "../../hooks/use-chat";
-// import { Mode, type ModeType } from "@nightcode/shared";
 import { TextAttributes } from "@opentui/core";
 
 type Props = {
