@@ -4,10 +4,11 @@ import { useTheme } from "../../providers/theme";
 import { DialogSearchList } from "../dialog-search-list";
 import { THEMES } from "../../theme";
 import type { Theme } from "../../theme";
+import { TextAttributes } from "@opentui/core";
 
 export const ThemeDialogContent = () => {
   const dialog = useDialog();
-  const { setTheme, currentTheme } = useTheme();
+  const { setTheme, currentTheme, colors } = useTheme();
   const originalThemeRef = useRef(currentTheme);
   const confirmedRef = useRef(false);
 
@@ -43,11 +44,10 @@ export const ThemeDialogContent = () => {
       onHighlight={handleHighlight}
       filterFn={(t, query) => t.name.toLowerCase().includes(query.toLowerCase())}
       renderItem={(theme, isSelected) => (
-        <text selectable={false} fg={isSelected ? "black" : "white"}>
-          {theme.name === originalThemeRef.current.name
-            ? "\u0020\u2022\u0020"
-            : "\u0020\u0020\u0020"}
+        <text selectable={false} fg={isSelected ? colors.primary : colors.foreground} attributes={isSelected ? TextAttributes.BOLD : 0}>
+          <span fg={theme.colors.primary}>✿ </span>
           {theme.name}
+          {theme.name === originalThemeRef.current.name ? " (current)" : ""}
         </text>
       )}
       getKey={(t) => t.name}

@@ -1,14 +1,20 @@
-import "opentui-spinner/react";
+import { useState, useEffect } from "react";
 import { useTheme } from "../providers/theme";
-import { Mode, type ModeType } from "@bloom/shared";
 
-type Props = {
-  mode?: ModeType;
-}
+const PETAL_FRAMES = ["✼", "✻", "✺", "✹", "✸", "✷", "✶", "✽"];
+const FRAME_MS = 110;
 
-export function Spinner({ mode = Mode.BUILD }: Props) {
+export function Spinner() {
   const { colors } = useTheme();
-  const activeColor = mode === Mode.PLAN ? colors.planMode : colors.primary;
+  const [frame, setFrame] = useState(0);
 
-  return <spinner name="aesthetic" color={activeColor} />;
-};
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setFrame((f) => (f + 1) % PETAL_FRAMES.length);
+    }, FRAME_MS);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return <text fg={colors.primary}>{PETAL_FRAMES[frame]}</text>;
+}

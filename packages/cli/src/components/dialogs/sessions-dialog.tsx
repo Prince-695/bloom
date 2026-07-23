@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router";
 import { useDialog } from "../../providers/dialog";
 import { useToast } from "../../providers/toast";
+import { useTheme } from "../../providers/theme";
 import { apiClient } from "../../lib/api-client";
 import { getErrorMessage } from "../../lib/http-errors";
 import { DialogSearchList } from "../dialog-search-list";
@@ -17,6 +18,7 @@ export const SessionsDialogContent = () => {
     const { close } = useDialog();
     const navigate = useNavigate();
     const { show } = useToast();
+    const { colors } = useTheme();
 
     useEffect(() => {
         let ignore = false;
@@ -61,7 +63,7 @@ export const SessionsDialogContent = () => {
 
     if (loading) {
         return (
-            <box flexDirection="column">
+            <box flexDirection="column" paddingY={1}>
                 <text attributes={TextAttributes.DIM}>Loading sessions...</text>
             </box>
         );
@@ -73,19 +75,18 @@ export const SessionsDialogContent = () => {
             onSelect={handleSelect}
             filterFn={(s, query) => s.title.toLowerCase().includes(query.toLowerCase())}
             renderItem={(session, isSelected) => (
-                <>
-                    <text selectable={false} fg={isSelected ? "black" : "white"}>
+                <box flexDirection="row" width="100%">
+                    <text selectable={false} fg={isSelected ? colors.primary : colors.foreground} attributes={isSelected ? TextAttributes.BOLD : 0}>
                         {session.title}
                     </text>
                     <box flexGrow={1} />
                     <text
                         selectable={false}
-                        fg={isSelected ? "black" : undefined}
                         attributes={TextAttributes.DIM}
                     >
                         {format(new Date(session.createdAt), "hh:mm a")}
                     </text>
-                </>
+                </box>
             )}
             getKey={(s) => s.id}
             placeholder="Search sessions"

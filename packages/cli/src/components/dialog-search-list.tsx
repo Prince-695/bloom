@@ -4,7 +4,7 @@ import { useKeyboard } from "@opentui/react";
 import { useKeyboardLayer } from "../providers/keyboard-layer";
 import { useTheme } from "../providers/theme";
 
-const MAX_VISIBLE_ITEMS = 6;
+const MAX_VISIBLE_ITEMS = 8;
 
 type DialogSearchListProps<T> = {
   items: T[];
@@ -46,7 +46,6 @@ export function DialogSearchList<T>({
     }, []);
 
     const filtered = searchValue ? items.filter((item) => filterFn(item, searchValue)) : items;
-
     const visibleHeight = Math.min(filtered.length, MAX_VISIBLE_ITEMS);
 
     useKeyboard((key) => {
@@ -67,7 +66,7 @@ export function DialogSearchList<T>({
                 const item = filtered[newIndex];
                 if (item && onHighlight) onHighlight(item);
                 return newIndex;
-            });
+                });
         } else if (key.name === "down") {
             setSelectedIndex((i) => {
                 const newIndex = Math.min(filtered.length - 1, i + 1);
@@ -106,19 +105,25 @@ export function DialogSearchList<T>({
                                 flexDirection="row"
                                 height={1}
                                 overflow="hidden"
-                                backgroundColor={isSelected ? colors.selection : undefined}
                                 onMouseMove={() => {
                                     setSelectedIndex(i);
                                     if (onHighlight) onHighlight(item);
                                 }}
                                 onMouseDown={() => onSelect(item)}
                             >
-                                {renderItem(item, isSelected)}
+                                <box width={2} flexShrink={0}>
+                                    <text selectable={false} fg={isSelected ? colors.primary : colors.background}>
+                                        {isSelected ? ">" : " "}
+                                    </text>
+                                </box>
+                                <box flexGrow={1}>
+                                    {renderItem(item, isSelected)}
+                                </box>
                             </box>
-                        )
+                        );
                     })}
                 </scrollbox>
             )}
         </box>
     );
-};
+}
