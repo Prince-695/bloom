@@ -142,7 +142,7 @@ export function BotMessage({
               ›
             </text>
             <text attributes={TextAttributes.DIM}>{model}</text>
-            {(durationMs != null) && (
+            {(durationMs != null && !streaming) && (
               <>
                 <text attributes={TextAttributes.DIM} fg={colors.dimSeparator}>
                   ›
