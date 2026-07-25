@@ -8,17 +8,16 @@ import type { TextareaRenderable, ScrollBoxRenderable } from "@opentui/core";
 import { useKeyboard, useRenderer } from "@opentui/react";
 import { useNavigate } from "react-router";
 import type { KeyBinding } from "@opentui/core";
-import { EmptyBorder } from "./border";
-import { StatusBar } from "./status-bar";
 import { CommandMenu } from "./command-menu";
 import type { Command } from "./command-menu/types";
 import { useCommandMenu } from "./command-menu/use-command-menu";
 import { useToast } from "../providers/toast";
 import { useKeyboardLayer } from "../providers/keyboard-layer";
-import { useDialog } from "../providers/dialog";
+import { useDialog, DialogHost } from "../providers/dialog";
 import { useTheme } from "../providers/theme";
 import { usePromptConfig } from "../providers/prompt-config";
 import { Mode } from "@bloom/shared";
+import { PROMPT_PLACEHOLDER } from "../lib/brand";
 
 const MAX_VISIBLE_MENTIONS = 8;
 const CURRENT_DIRECTORY = process.cwd();
@@ -211,13 +210,13 @@ function FileMentionMenu({ candidates, selectedIndex, scrollRef, onSelect, onExe
                         onMouseDown={() => onExecute(index)}
                     >
                         <box flexGrow={1} flexShrink={1} overflow="hidden" >
-                            <text selectable={false} fg={isSelected ? "black" : "white"} >
-                                {candidate.path}
+                            <text selectable={false} fg={isSelected ? colors.background : colors.foreground} >
+                                {candidate.kind === "directory" ? "✿ " : "  "}{candidate.path}
                             </text>
                         </box>
 
                         <box width={8} alignItems="flex-end" flexShrink={0} >
-                            <text selectable={false} fg={isSelected ? "black" : "gray"} >
+                            <text selectable={false} fg={isSelected ? colors.background : colors.muted} >
                                 {candidate.kind === "directory" ? "Folder" : "File"}
                             </text>
                         </box>
@@ -505,54 +504,36 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
     });
     
     return (
-        <box width="100%" alignItems="center" >
+        <box width="100%" flexDirection="column" gap={0}>
             <box
-                border={["left"]}
+                borderStyle="rounded"
                 borderColor={mode === Mode.PLAN ? colors.planMode : colors.primary}
-                customBorderChars={{
-                    ...EmptyBorder,
-                    vertical: "┃",
-                    bottomLeft: "┗",
-                }}
                 width="100%"
+                paddingX={1}
             >
-                <box
-                    position="relative"
-                    justifyContent="center"
-                    paddingX={2}
-                    paddingY={1}
-                    backgroundColor={colors.surface}
-                    width="100%"
-                    gap={1}
-                >
-                {showCommandMenu && (
-                    <box
-                        position="absolute"
-                        bottom="100%"
-                        left={0}
-                        width="100%"
-                        backgroundColor={colors.surface}
-                        zIndex={10}
-                    >
-                        <CommandMenu
-                            query={commandQuery}
-                            selectedIndex={selectedIndex}
-                            scrollRef={scrollRef}
-                            onSelect={setSelectedIndex}
-                            onExecute={handleCommandExecute}
-                        />
-                    </box>
-                )}
+                <textarea
+                    ref={textareaRef}
+                    focused={!disabled && (isTopLayer("base") || isTopLayer("command") || isTopLayer("mention"))}
+                    keyBindings={TEXTAREA_KEY_BINDINGS}
+                    onContentChange={handleTextareaContentChange}
+                    placeholder={PROMPT_PLACEHOLDER}
+                />
+            </box>
 
-                {!showCommandMenu && showMentionMenu && (
-                    <box
-                    position="absolute"
-                    bottom="100%"
-                    left={0}
-                    width="100%"
-                    backgroundColor={colors.surface}
-                    zIndex={10}
-                    >
+            {showCommandMenu && (
+                <box width="100%" paddingTop={1}>
+                    <CommandMenu
+                        query={commandQuery}
+                        selectedIndex={selectedIndex}
+                        scrollRef={scrollRef}
+                        onSelect={setSelectedIndex}
+                        onExecute={handleCommandExecute}
+                    />
+                </box>
+            )}
+
+            {!showCommandMenu && showMentionMenu && (
+                <box width="100%" paddingTop={1}>
                     <FileMentionMenu
                         candidates={mentionCandidates}
                         selectedIndex={mentionSelectedIndex}
@@ -560,18 +541,17 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
                         onSelect={setMentionSelectedIndex}
                         onExecute={handleMentionExecute}
                     />
-                    </box>
-                )}
-                    <textarea
-                        ref={textareaRef}
-                        focused={!disabled && (isTopLayer("base") || isTopLayer("command") || isTopLayer("mention"))}
-                        keyBindings={TEXTAREA_KEY_BINDINGS}
-                        onContentChange={handleTextareaContentChange}
-                        placeholder={`Ask anything... "Make minecraft in 100 lines of code"`}
-                    />
-                    <StatusBar />
                 </box>
-            </box>
+            )}
+
+            {dialog.currentDialog && (
+                <box width="100%">
+                    <DialogHost
+                        currentDialog={dialog.currentDialog}
+                        close={dialog.close}
+                    />
+                </box>
+            )}
         </box>
-    )
+    );
 }

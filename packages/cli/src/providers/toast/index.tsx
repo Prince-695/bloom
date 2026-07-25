@@ -100,7 +100,8 @@ function Toast({ currentToast }: ToastProps) {
             customBorderChars={SplitBorderChars}
         >
             <box flexDirection="column" gap={1} width="100%">
-                <text fg="#e1e1e1" wrapMode="word" width="100%">
+                <text fg={colors.foreground} wrapMode="word" width="100%">
+                    <span fg={borderColor}>✿ </span>
                     {currentToast.message}
                 </text>
             </box>

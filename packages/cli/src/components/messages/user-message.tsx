@@ -1,38 +1,27 @@
-import { EmptyBorder } from "../border";
+import { TextAttributes } from "@opentui/core";
 import { useTheme } from "../../providers/theme";
-import { Mode, type ModeType } from "@bloom/shared";
+import { useTerminalDimensions } from "@opentui/react";
 
 type Props = {
-    message: string;
-    mode: ModeType;
+  message: string;
+  mode: string;
 };
 
-export function UserMessage({ message, mode }: Props) {
-    const { colors } = useTheme();
+/** Accent user turn with a thin light rule beneath — nothing else. */
+export function UserMessage({ message }: Props) {
+  const { colors } = useTheme();
+  const { width } = useTerminalDimensions();
+  const rule = "─".repeat(Math.max(8, width - 6));
 
-    return (
-        <box width="100%" alignItems="center" >
-            <box
-                border={["left"]}
-                borderColor={mode === Mode.PLAN ? colors.planMode : colors.primary}
-                width="100%"
-                customBorderChars={{
-                    ...EmptyBorder,
-                    vertical: "┃",
-                    bottomLeft: "┗",
-                }}
-            >
-                <box
-                    justifyContent="center"
-                    paddingX={2}
-                    paddingY={1}
-                    backgroundColor={colors.surface}
-                    width="100%"
-                >
-                    <text>{message}</text>
-                </box>
-
-            </box>
-        </box>
-    )
+  return (
+    <box width="100%" flexDirection="column" paddingTop={1} paddingBottom={0} gap={0}>
+      <text fg={colors.primary}>
+        {"> "}
+        {message}
+      </text>
+      <text attributes={TextAttributes.DIM} fg={colors.dimSeparator}>
+        {rule}
+      </text>
+    </box>
+  );
 }

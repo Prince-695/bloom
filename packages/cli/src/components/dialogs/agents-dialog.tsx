@@ -1,7 +1,9 @@
 import { useCallback } from "react";
 import { useDialog } from "../../providers/dialog";
+import { useTheme } from "../../providers/theme";
 import { DialogSearchList } from "../dialog-search-list";
 import { Mode, type ModeType } from "@bloom/shared";
+import { TextAttributes } from "@opentui/core";
 
 const AVAILABLE_MODES: ModeType[] = [Mode.BUILD, Mode.PLAN];
 
@@ -16,6 +18,7 @@ function getModeLabel(mode: ModeType) {
 
 export const AgentsDialogContent = ({ currentMode, onSelectMode }: AgentsDialogContentProps) => {
   const dialog = useDialog();
+  const { colors } = useTheme();
 
   const handleSelect = useCallback(
     (nextMode: ModeType) => {
@@ -31,8 +34,8 @@ export const AgentsDialogContent = ({ currentMode, onSelectMode }: AgentsDialogC
       onSelect={handleSelect}
       filterFn={(item, query) => getModeLabel(item).toLowerCase().includes(query.toLowerCase())}
       renderItem={(item, isSelected) => (
-        <text selectable={false} fg={isSelected ? "black" : "white"}>
-          {item === currentMode ? " • " : "   "}
+        <text selectable={false} fg={isSelected ? colors.primary : colors.foreground} attributes={isSelected ? TextAttributes.BOLD : 0}>
+          {item === currentMode ? " (current) " : " "}
           {getModeLabel(item)}
         </text>
       )}
