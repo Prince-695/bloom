@@ -17,14 +17,17 @@
         "@ai-sdk/provider-utils": "^5.0.7",
         "@bloom/database": "workspace:*",
         "@bloom/shared": "workspace:*",
-        "@clerk/backend": "^3.12.0",
         "@hono/zod-validator": "^0.8.0",
-        "@polar-sh/sdk": "^0.49.0",
         "@sentry/bun": "^10.63.0",
         "@sentry/hono": "^10.63.0",
         "ai": "^7.0.15",
+        "better-auth": "^1.6.25",
         "dotenv": "^17.4.2",
         "hono": "^4.12.27",
+        "nodemailer": "^9.0.3",
         "zod": "^4.4.3"
+    },
+    "devDependencies": {
+        "@types/nodemailer": "^8.0.1"
     }
 }

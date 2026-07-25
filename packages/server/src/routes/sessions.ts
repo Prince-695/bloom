@@ -5,7 +5,7 @@ import { z } from "zod";
 import { db } from "@bloom/database/client";
 
 import type { AuthenticatedEnv } from "../middleware/require-auth";
-import { requireCreditsBalance } from "../middleware/require-credits-balance";
+import { requireRequestQuota } from "../middleware/require-request-quota";
 
 
 const createSessionSchema = z.object({
@@ -23,7 +23,7 @@ const app = new Hono<AuthenticatedEnv>()
   .get("/", async (c) => {
     const userId = c.get("userId");
 
-    const sessions = await db.session.findMany({
+    const sessions = await db.chatSession.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
       select: {
@@ -48,7 +48,7 @@ const app = new Hono<AuthenticatedEnv>()
     const id = c.req.param("id");
     const userId = c.get("userId");
     
-    const session = await db.session.findUnique({
+    const session = await db.chatSession.findUnique({
       where: { id, userId },
     });
 
@@ -58,7 +58,7 @@ const app = new Hono<AuthenticatedEnv>()
 
     return c.json(session);
   })
-  .post("/", requireCreditsBalance, createSessionValidator, async (c) => {
+  .post("/", requireRequestQuota, createSessionValidator, async (c) => {
     // MOCK: Uncomment to simulate slow session loading
     // await new Promise((r) => setTimeout(r, 5000))
 
@@ -71,7 +71,7 @@ const app = new Hono<AuthenticatedEnv>()
     const userId = c.get("userId");
     const data = c.req.valid("json");
 
-    const session = await db.session.create({
+    const session = await db.chatSession.create({
       data: {
         ...data,
         userId,

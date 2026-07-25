@@ -16,6 +16,7 @@ import { useKeyboardLayer } from "../providers/keyboard-layer";
 import { useDialog, DialogHost } from "../providers/dialog";
 import { useTheme } from "../providers/theme";
 import { usePromptConfig } from "../providers/prompt-config";
+import { useUsage } from "../providers/usage";
 import { Mode } from "@bloom/shared";
 import { PROMPT_PLACEHOLDER } from "../lib/brand";
 
@@ -241,6 +242,7 @@ export const TEXTAREA_KEY_BINDINGS: KeyBinding[] = [
 
 export function InputBar({ onSubmit, disabled = false }: Props) {
     const { mode, toggleMode, setMode, setModel } = usePromptConfig();
+    const { refresh: refreshUsage } = useUsage();
     const textareaRef = useRef<TextareaRenderable | null>(null);
     const onSubmitRef = useRef<() => void>(() => {});
     const activeMentionRef = useRef<MentionMatch | null>(null);
@@ -369,11 +371,12 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
                 mode,
                 setMode,
                 setModel,
+                refreshUsage,
             });
         } else {
             textarea.insertText(command.value + " ");
         }
-    }, [renderer, toast, dialog, navigate, mode, setMode, setModel]);
+    }, [renderer, toast, dialog, navigate, mode, setMode, setModel, refreshUsage]);
 
     const handleCommandExecute = useCallback((index: number) => {
         const command = resolveCommand(index);

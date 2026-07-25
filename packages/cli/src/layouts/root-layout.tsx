@@ -6,6 +6,7 @@ import { KeyboardLayerProvider } from "../providers/keyboard-layer";
 import { ThemeProvider } from "../providers/theme";
 import { ThemedRoot } from "./themed-root";
 import { PromptConfigProvider } from "../providers/prompt-config";
+import { UsageProvider } from "../providers/usage";
 import { WelcomeScreen } from "../components/welcome-screen";
 
 function LaunchGate({ children }: { children: ReactNode }) {
@@ -25,11 +26,13 @@ export function RootLayout() {
         <KeyboardLayerProvider>
           <DialogProvider>
             <PromptConfigProvider>
-              <ThemedRoot>
-                <LaunchGate>
-                  <Outlet />
-                </LaunchGate>
-              </ThemedRoot>
+              <UsageProvider>
+                <ThemedRoot>
+                  <LaunchGate>
+                    <Outlet />
+                  </LaunchGate>
+                </ThemedRoot>
+              </UsageProvider>
             </PromptConfigProvider>
           </DialogProvider>
         </KeyboardLayerProvider>

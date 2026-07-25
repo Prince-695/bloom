@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { TextAttributes } from "@opentui/core";
 import { useNavigate } from "react-router";
 import { usePromptConfig } from "../providers/prompt-config";
+import { useUsage } from "../providers/usage";
 import { useTheme } from "../providers/theme";
 import { InputBar } from "../components/input-bar";
 import { Header } from "../components/header";
@@ -11,6 +12,7 @@ import { Mode } from "@bloom/shared";
 export function Home() {
   const navigate = useNavigate();
   const { mode, model } = usePromptConfig();
+  const { remaining, limit } = useUsage();
   const { colors } = useTheme();
 
   const handleSubmit = useCallback(
@@ -55,7 +57,8 @@ export function Home() {
         </text>
 
         <text attributes={TextAttributes.DIM} fg={colors.muted}>
-          {model} · {mode === Mode.PLAN ? "Plan" : "Build"}
+          {remaining}/{limit} requests remaining · {model} ·{" "}
+          {mode === Mode.PLAN ? "Plan" : "Build"}
         </text>
       </box>
     </box>

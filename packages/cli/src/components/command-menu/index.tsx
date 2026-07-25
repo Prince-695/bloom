@@ -44,7 +44,7 @@ export function CommandMenu({
             <Separator inset={4} />
 
             <scrollbox ref={scrollRef} height={visibleCount} width="100%">
-                {filtered.slice(0, MAX_VISIBLE_ITEMS).map((cmd, i) => {
+                {filtered.map((cmd, i) => {
                     const isSelected = i === selectedIndex;
 
                     return (

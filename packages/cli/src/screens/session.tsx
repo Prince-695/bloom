@@ -17,6 +17,7 @@ import type { Message } from "../hooks/use-chat";
 import { apiClient } from "../lib/api-client";
 import { getErrorMessage } from "../lib/http-errors";
 import { useKeyboardLayer } from "../providers/keyboard-layer";
+import { useUsage } from "../providers/usage";
 
 type SessionData = InferResponseType<(typeof apiClient.sessions)[":id"]["$get"], 200>;
 
@@ -66,12 +67,14 @@ function SessionChat({
 }) {
   const [initialMessages] = useState(() => session.messages as unknown as Message[]);
   const { mode, model } = usePromptConfig();
+  const { refresh: refreshUsage } = useUsage();
   const { isTopLayer } = useKeyboardLayer();
   const { messages, status, submit, abort, interrupt, error } = useChat(
     session.id,
     initialMessages
   );
   const hasSubmittedInitialPromptRef = useRef(false);
+  const previousStatusRef = useRef(status);
 
   // Stop the pending reply when the user leaves this session.
   useEffect(() => {
@@ -80,7 +83,22 @@ function SessionChat({
     };
   }, [abort]);
 
-  // Let the user cancel a reply even before the first streamed chunk arrives.
+  // Refresh remaining requests as soon as a prompt is accepted / finishes.
+  useEffect(() => {
+    const prev = previousStatusRef.current;
+    previousStatusRef.current = status;
+
+    if (status === "submitted" && prev === "ready") {
+      void refreshUsage();
+      return;
+    }
+
+    const wasBusy = prev === "submitted" || prev === "streaming";
+    const isIdle = status === "ready" || status === "error";
+    if (wasBusy && isIdle) {
+      void refreshUsage();
+    }
+  }, [status, refreshUsage]);  // Let the user cancel a reply even before the first streamed chunk arrives.
   useKeyboard((key) => {
     if (key.name === "escape" && isTopLayer("base") && status === "streaming") {
       key.preventDefault();

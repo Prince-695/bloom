@@ -10,6 +10,7 @@ export type CommandContext = {
   mode: ModeType;
   setMode: (mode: ModeType) => void;
   setModel: (model: SupportedChatModelId) => void;
+  refreshUsage: () => Promise<void>;
 };
 
 export type Command = {

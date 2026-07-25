@@ -5,6 +5,7 @@ import { Spinner } from "./spinner";
 import { Header } from "./header";
 import { Separator } from "./separator";
 import { usePromptConfig } from "../providers/prompt-config";
+import { useUsage } from "../providers/usage";
 import { useTheme } from "../providers/theme";
 import { Mode } from "@bloom/shared";
 
@@ -24,6 +25,7 @@ export function SessionShell({
   interruptible = false,
 }: Props) {
   const { mode, model } = usePromptConfig();
+  const { remaining, limit } = useUsage();
   const { colors } = useTheme();
 
   return (
@@ -84,7 +86,8 @@ export function SessionShell({
 
         <box flexDirection="row" gap={1} flexShrink={0}>
           <text attributes={TextAttributes.DIM} fg={colors.muted}>
-            {model} · {mode === Mode.PLAN ? "Plan" : "Build"}
+            {remaining}/{limit} requests remaining · {model} ·{" "}
+            {mode === Mode.PLAN ? "Plan" : "Build"}
           </text>
         </box>
       </box>
