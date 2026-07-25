@@ -1,11 +1,17 @@
 import { SUPPORTED_CHAT_MODELS } from "@bloom/shared";
-import { AgentsDialogContent, ModelsDialogContent, SessionsDialogContent, ThemeDialogContent } from "../dialogs";
+import {
+    AgentsDialogContent,
+    MeDialogContent,
+    ModelsDialogContent,
+    SessionsDialogContent,
+    ThemeDialogContent,
+} from "../dialogs";
 import type { Command } from "./types";
 
-import { performLogin } from "../../lib/oauth";
-import { clearAuth } from "../../lib/auth";
+import { performLogin } from "../../auth/device-flow";
+import { clearAuth, getAuth } from "../../lib/auth";
 
-import { openBillingPortal, openUpgradeCheckout } from "../../lib/upgrade";
+// import { openBillingPortal, openUpgradeCheckout } from "../../lib/upgrade";
 
 export const COMMANDS: Command[] = [
     {
@@ -14,6 +20,25 @@ export const COMMANDS: Command[] = [
         value: "/new",
         action: (ctx) => {
             ctx.navigate("/");
+        },
+    },
+    {
+        name: "me",
+        description: "Show your account info",
+        value: "/me",
+        action: (ctx) => {
+            if (!getAuth()) {
+                ctx.toast.show({
+                    variant: "error",
+                    message: "Not signed in — run /login first",
+                });
+                return;
+            }
+
+            ctx.dialog.open({
+                title: "Account",
+                children: <MeDialogContent />,
+            });
         },
     },
     {
@@ -69,6 +94,7 @@ export const COMMANDS: Command[] = [
 
             try {
                 await performLogin();
+                await ctx.refreshUsage();
                 ctx.toast.show({ variant: "success", message: "Signed in" });
             } catch (error) {
                 const message = error instanceof Error 
@@ -88,44 +114,44 @@ export const COMMANDS: Command[] = [
             ctx.toast.show({ variant: "success", message: "Signed out..." });
         },
     },
-    {
-        name: "upgrade",
-        description: "Buy more credits",
-        value: "/upgrade",
-        action: async (ctx) => {
-            ctx.toast.show({ message: "Opening credits checkout..." });
+    // {
+    //     name: "upgrade",
+    //     description: "Buy more credits",
+    //     value: "/upgrade",
+    //     action: async (ctx) => {
+    //         ctx.toast.show({ message: "Opening credits checkout..." });
 
-            try {
-                await openUpgradeCheckout();
-                ctx.toast.show({
-                    variant: "success",
-                    message: "Checkout opened in browser",
-                });
-            } catch (error) {
-                const message = error instanceof Error ? error.message : "Failed to open checkout";
-                ctx.toast.show({ variant: "error", message });
-            }
-        },
-    },
-    {
-        name: "usage",
-        description: "Open billing portal in your browser",
-        value: "/usage",
-        action: async (ctx) => {
-            ctx.toast.show({ message: "Opening billing portal..." });
+    //         try {
+    //             await openUpgradeCheckout();
+    //             ctx.toast.show({
+    //                 variant: "success",
+    //                 message: "Checkout opened in browser",
+    //             });
+    //         } catch (error) {
+    //             const message = error instanceof Error ? error.message : "Failed to open checkout";
+    //             ctx.toast.show({ variant: "error", message });
+    //         }
+    //     },
+    // },
+    // {
+    //     name: "usage",
+    //     description: "Open billing portal in your browser",
+    //     value: "/usage",
+    //     action: async (ctx) => {
+    //         ctx.toast.show({ message: "Opening billing portal..." });
 
-            try {
-                await openBillingPortal();
-                ctx.toast.show({
-                    variant: "success",
-                    message: "Billing portal opened in browser",
-                });
-            } catch (error) {
-                const message = error instanceof Error ? error.message : "Failed to open billing portal";
-                ctx.toast.show({ variant: "error", message });
-            }
-        },
-    },
+    //         try {
+    //             await openBillingPortal();
+    //             ctx.toast.show({
+    //                 variant: "success",
+    //                 message: "Billing portal opened in browser",
+    //             });
+    //         } catch (error) {
+    //             const message = error instanceof Error ? error.message : "Failed to open billing portal";
+    //             ctx.toast.show({ variant: "error", message });
+    //         }
+    //     },
+    // },
     {
         name: "exit",
         description: "Quit the application",

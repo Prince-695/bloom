@@ -11,17 +11,15 @@ import {
 } from "ai";
 import { db } from "@bloom/database/client";
 import type { Prisma } from "@bloom/database";
-import { 
-  getToolContracts, 
-  modeSchema, 
-  type ModeType, 
-  type ToolContracts
+import {
+  getToolContracts,
+  modeSchema,
+  type ModeType,
+  type ToolContracts,
 } from "@bloom/shared";
-import { buildSystemPrompt } from "../system-prompt";
+import { buildSystemPrompt } from "../runtime/prompt";
 import type { AuthenticatedEnv } from "../middleware/require-auth";
-import { requireCreditsBalance } from "../middleware/require-credits-balance";
-import { calculateCreditsForUsage } from "../lib/credits";
-import { ingestAiUsage } from "../lib/polar";
+import { tryConsumePrompt } from "../lib/quota";
 import { isSupportedChatModel, resolveChatModel } from "../lib/models";
 
 type ChatMessageMetadata = {
@@ -61,122 +59,104 @@ function hasPendingToolCalls(message: bloomUIMessage) {
 
     return false;
   });
-};
+}
 
-const app = new Hono<AuthenticatedEnv>()
-  .post(
-    "/",
-    requireCreditsBalance,
-    submitValidator,
-    async (c) => {
-      const userId = c.get("userId");
-      const { id, messages, mode, model } = c.req.valid("json");
+const app = new Hono<AuthenticatedEnv>().post("/", submitValidator, async (c) => {
+  const userId = c.get("userId");
+  const { id, messages, mode, model } = c.req.valid("json");
 
-      const session = await db.session.findUnique({
+  const session = await db.chatSession.findUnique({
+    where: { id, userId },
+  });
+
+  if (!session) {
+    return c.json({ error: "Session not found" }, 404);
+  }
+
+  const lastMessage = messages[messages.length - 1];
+  const isUserPrompt = lastMessage?.role === "user";
+
+  // Only count real user prompts — tool-loop continuation posts do not consume quota
+  if (isUserPrompt) {
+    const quota = await tryConsumePrompt(userId);
+    if (!quota) {
+      return c.json({ error: "Request limit reached. No prompts remaining." }, 402);
+    }
+  }
+
+  const startTime = Date.now();
+  const tools = getToolContracts(mode);
+  const resolvedModel = resolveChatModel(model);
+  const previousMessages = Array.isArray(session.messages)
+    ? (session.messages as unknown as bloomUIMessage[])
+    : [];
+  const mergedMessages = [...previousMessages];
+
+  for (const message of messages) {
+    const incomingMessage = {
+      ...message,
+      metadata: { ...message.metadata, mode, model },
+    } satisfies bloomUIMessage;
+
+    const existingMessageIndex = mergedMessages.findIndex((m) => m.id === incomingMessage.id);
+
+    if (existingMessageIndex === -1) {
+      mergedMessages.push(incomingMessage);
+    } else {
+      mergedMessages[existingMessageIndex] = incomingMessage;
+    }
+  }
+
+  const nextMessages = await validateUIMessages<bloomUIMessage>({
+    messages: mergedMessages,
+    tools,
+  });
+  const modelMessages = await convertToModelMessages(nextMessages, { tools });
+  let completedUsage: LanguageModelUsage | null = null;
+
+  const result = streamText({
+    model: resolvedModel.model,
+    system: buildSystemPrompt({ mode }),
+    messages: modelMessages,
+    tools,
+    providerOptions: resolvedModel.providerOptions,
+    onFinish(event) {
+      completedUsage = event.totalUsage;
+    },
+  });
+
+  return result.toUIMessageStreamResponse<bloomUIMessage>({
+    originalMessages: nextMessages,
+    messageMetadata({ part }) {
+      if (part.type === "start") {
+        return { mode, model };
+      }
+
+      if (part.type !== "finish") return undefined;
+
+      return {
+        mode,
+        model,
+        durationMs: Date.now() - startTime,
+        ...(completedUsage ? { usage: completedUsage } : {}),
+      };
+    },
+    async onFinish(event) {
+      if (event.isAborted) return;
+
+      if (hasPendingToolCalls(event.responseMessage)) return;
+
+      await db.chatSession.update({
         where: { id, userId },
-      });
-
-      if (!session) {
-        return c.json({ error: "Session not found" }, 404);
-      }
-
-      const startTime = Date.now();
-      const tools = getToolContracts(mode);
-      const resolvedModel = resolveChatModel(model);
-      const previousMessages = Array.isArray(session.messages)
-        ? (session.messages as unknown as bloomUIMessage[])
-        : [];
-      const mergedMessages = [...previousMessages];
-      
-      for (const message of messages) {
-        const incomingMessage = {
-          ...message,
-          metadata: { ...message.metadata, mode, model },
-        } satisfies bloomUIMessage;
-
-        const existingMessageIndex = mergedMessages.findIndex((m) => m.id === incomingMessage.id);
-
-        if (existingMessageIndex === -1) {
-          mergedMessages.push(incomingMessage);
-        } else {
-          mergedMessages[existingMessageIndex] = incomingMessage;
-        }
-      }
-
-      const nextMessages = await validateUIMessages<bloomUIMessage>({
-        messages: mergedMessages,
-        tools,
-      });
-      const modelMessages = await convertToModelMessages(nextMessages, { tools });
-      let completedUsage: LanguageModelUsage | null = null;
-
-      const result = streamText({
-        model: resolvedModel.model,
-        system: buildSystemPrompt({ mode }),
-        messages: modelMessages,
-        tools,
-        providerOptions: resolvedModel.providerOptions,
-        onFinish(event) {
-          completedUsage = event.totalUsage;
-        },
-      });
-
-      return result.toUIMessageStreamResponse<bloomUIMessage>({
-        originalMessages: nextMessages,
-        messageMetadata({ part }) {
-          if (part.type === "start") {
-            return { mode, model };
-          }
-
-          if (part.type !== "finish") return undefined;
-
-          return {
-            mode,
-            model,
-            durationMs: Date.now() - startTime,
-            ...(completedUsage ? { usage: completedUsage } : {}),
-          };
-        },
-        async onFinish(event) {
-          if (event.isAborted) return;
-
-          if (hasPendingToolCalls(event.responseMessage)) return;
-
-          await db.session.update({
-            where: { id, userId },
-            data: {
-              messages: event.messages as unknown as Prisma.InputJsonValue,
-            },
-          });
-
-          if (!completedUsage) return;
-
-          try {
-            const billableUsage = calculateCreditsForUsage({
-              provider: resolvedModel.provider,
-              model: resolvedModel.modelId,
-              usage: completedUsage,
-            });
-
-            await ingestAiUsage({
-              externalCustomerId: userId,
-              eventId: `chat-message:${event.responseMessage.id}`,
-              credits: billableUsage.credits,
-            });
-          } catch (error) {
-            console.error("Failed to ingest Polar AI usage for chat message", {
-              error,
-              sessionId: id,
-              messageId: event.responseMessage.id,
-              userId,
-            });
-          }
-        },
-        onError(error) {
-          return error instanceof Error ? error.message : String(error);
+        data: {
+          messages: event.messages as unknown as Prisma.InputJsonValue,
         },
       });
     },
-  );
+    onError(error) {
+      return error instanceof Error ? error.message : String(error);
+    },
+  });
+});
 
 export default app;

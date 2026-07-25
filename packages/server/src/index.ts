@@ -2,13 +2,28 @@ import { Hono } from "hono";
 import { sentry } from "@sentry/hono/bun";
 import * as Sentry from "@sentry/hono/bun";
 import { HTTPException } from "hono/http-exception";
+import { cors } from "hono/cors";
 import sessions from "./routes/sessions";
 import chat from "./routes/chat";
-import auth from "./routes/auth";
-import billing from "./routes/billing";
+import usage from "./routes/usage";
+import me from "./routes/me";
+import authCliRoutes from "./features/auth/routes";
 import { requireAuth } from "./middleware/require-auth";
+import { auth } from "./integrations/better-auth";
 
 const app = new Hono();
+
+const appUrl = process.env.APP_URL ?? "http://localhost:3001";
+
+app.use(
+  "*",
+  cors({
+    origin: [appUrl, "http://localhost:3001"],
+    credentials: true,
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  }),
+);
 
 app.use(
   sentry(app, {
@@ -16,22 +31,15 @@ app.use(
     tracesSampleRate: 1.0,
     enableLogs: true,
     sendDefaultPii: true,
-    dataCollection: {
-      // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
-      // https://docs.sentry.io/platforms/javascript/guides/hono/configuration/options/#dataCollection
-      // userInfo: false,
-      // httpBodies: [],
-    },
+    dataCollection: {},
   }),
-); 
+);
 
 app.get("/debug-sentry", () => {
-  // Send a log before throwing the error
-  Sentry.logger.info('User triggered test error', {
-    action: 'test_error_endpoint',
+  Sentry.logger.info("User triggered test error", {
+    action: "test_error_endpoint",
   });
-  // Send a test metric before throwing the error
-  Sentry.metrics.count('test_counter', 1);
+  Sentry.metrics.count("test_counter", 1);
   throw new Error("My first Sentry error!");
 });
 
@@ -44,22 +52,31 @@ app.onError((error, c) => {
       method: c.req.method,
     });
 
-    return c.json({
-      error: error.message || "Request failed",
-    }, error.status);
-  };
+    return c.json(
+      {
+        error: error.message || "Request failed",
+      },
+      error.status,
+    );
+  }
 
   return c.json({ error: "Internal server error" }, 500);
 });
 
+// Better Auth HTTP handler
+app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+
 app.use("/sessions/*", requireAuth);
 app.use("/chat/*", requireAuth);
-app.use("/billing/checkout", requireAuth);
-app.use("/billing/portal", requireAuth);
+app.use("/usage/*", requireAuth);
+app.use("/usage", requireAuth);
+app.use("/me", requireAuth);
+app.use("/me/*", requireAuth);
 
 const routes = app
-  .route("/auth", auth)
-  .route("/billing", billing)
+  .route("/auth", authCliRoutes)
+  .route("/usage", usage)
+  .route("/me", me)
   .route("/sessions", sessions)
   .route("/chat", chat);
 
