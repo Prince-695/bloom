@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { MailIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { GitHubIcon, GoogleIcon } from "@/components/auth/oauth-icons";
 import { BloomLogo } from "@/components/site/bloom-logo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -233,6 +234,7 @@ export function LoginForm() {
                   className="w-full bloom-brutal-sm"
                   onClick={signInWithGoogle}
                 >
+                  <GoogleIcon data-icon="inline-start" />
                   Continue with Google
                 </Button>
                 <Button
@@ -241,6 +243,7 @@ export function LoginForm() {
                   className="w-full bloom-brutal-sm"
                   onClick={signInWithGitHub}
                 >
+                  <GitHubIcon data-icon="inline-start" />
                   Continue with GitHub
                 </Button>
               </div>

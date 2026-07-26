@@ -77,6 +77,48 @@ export default function DocsInstallPage() {
         </div>
       </DocsSection>
 
+      <DocsSection title="Updating Bloom">
+        <DocsP>
+          When a newer GitHub Release exists, Bloom shows a toast on launch:{" "}
+          <InlineCode>vX.Y.Z available — run /update</InlineCode>. That notice
+          does not replace the binary by itself.
+        </DocsP>
+        <CodeBlock label="bloom" code={`/update`} />
+        <DocsList
+          items={[
+            <>
+              <InlineCode>/update</InlineCode> downloads the matching asset for
+              your OS/arch and replaces the installed binary.
+            </>,
+            <>
+              Works without signing in (same allowlist as{" "}
+              <InlineCode>/login</InlineCode> / <InlineCode>/exit</InlineCode>).
+            </>,
+            <>
+              After success, quit and run <InlineCode>bloom</InlineCode> again.
+            </>,
+            <>
+              Opt out of checks and updates:{" "}
+              <InlineCode>BLOOM_NO_UPDATE=1</InlineCode>.
+            </>,
+            <>
+              Full command reference:{" "}
+              <a
+                href="/docs/commands#update"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                /update
+              </a>
+              .
+            </>,
+          ]}
+        />
+        <DocsP>
+          You can also re-run the one-line installer above — it always pulls
+          from the latest GitHub Release.
+        </DocsP>
+      </DocsSection>
+
       <DocsSection title="Where it installs">
         <DocsList
           items={[
@@ -99,6 +141,13 @@ export default function DocsInstallPage() {
             <InlineCode key={p}>{p}</InlineCode>
           ))}
         />
+        <DocsP>
+          Each GitHub Release is its own version (for example{" "}
+          <InlineCode>v0.1.2</InlineCode>) with assets named like{" "}
+          <InlineCode>bloom-macos-arm64-0.1.2</InlineCode>. Installers and{" "}
+          <InlineCode>/update</InlineCode> pick the file for your machine from
+          the latest release.
+        </DocsP>
         <DocsP>
           Not shipped yet:{" "}
           {DOCS_INSTALL.unsupported.map((p, i) => (

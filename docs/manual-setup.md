@@ -134,4 +134,4 @@ bun run dev:cli
 
 - [ ] Deploy API + web + Postgres
 - [ ] Update OAuth redirect URLs and SMTP credentials for production
-- [ ] Tag a `v*` release so `scripts/install.sh` can download CLI binaries
+- [ ] Tag a `v*` release so the site installers (`/install.sh`, `/install.ps1`) can download CLI binaries

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { MailIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { GitHubIcon, GoogleIcon } from "@/components/auth/oauth-icons";
 import { BloomLogo } from "@/components/site/bloom-logo";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -381,6 +382,7 @@ export function CliAuthHandoff() {
               disabled={pending || handoffPending}
               onClick={() => void signInWithGoogle()}
             >
+              <GoogleIcon data-icon="inline-start" />
               Continue with Google
             </Button>
             <Button
@@ -390,6 +392,7 @@ export function CliAuthHandoff() {
               disabled={pending || handoffPending}
               onClick={() => void signInWithGitHub()}
             >
+              <GitHubIcon data-icon="inline-start" />
               Continue with GitHub
             </Button>
           </div>

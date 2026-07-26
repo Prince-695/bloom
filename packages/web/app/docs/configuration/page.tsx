@@ -34,10 +34,19 @@ export default function DocsConfigurationPage() {
                   Bloom API base URL (chat, sessions, CLI auth exchange)
                 </td>
               </tr>
-              <tr>
+              <tr className="border-b border-border/70">
                 <td className="px-4 py-3 font-mono text-primary">APP_URL</td>
                 <td className="px-4 py-3 text-muted-foreground">
                   Web app origin used for the /cli/auth browser handoff
+                </td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-mono text-primary">
+                  BLOOM_NO_UPDATE
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  Set to <InlineCode>1</InlineCode> to disable launch update
+                  toasts and <InlineCode>/update</InlineCode>
                 </td>
               </tr>
             </tbody>

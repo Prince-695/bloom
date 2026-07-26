@@ -8,8 +8,13 @@ export const DOCS_INSTALL = {
   binWindows: "%USERPROFILE%\\.local\\bin\\bloom.exe",
   authFile: "~/.bloom/auth.json",
   preferencesFile: "~/.bloom/preferences.json",
-  platforms: ["linux-x64", "linux-arm64", "darwin-arm64", "windows-x64"] as const,
-  unsupported: ["darwin-x64 (Intel Mac)", "windows-arm64"] as const,
+  platforms: [
+    "bloom-linux-x64-<version>",
+    "bloom-linux-arm64-<version>",
+    "bloom-macos-arm64-<version>",
+    "bloom-windows-x64-<version>.exe",
+  ] as const,
+  unsupported: ["macos Intel (x64)", "windows-arm64"] as const,
 };
 
 export const DOCS_MODELS = [

@@ -30,7 +30,8 @@ export const metadata: Metadata = {
   },
   description: SITE_TAGLINE,
   icons: {
-    icon: "/logo.png",
+    icon: [{ url: "/logo.png?v=2", type: "image/png" }],
+    apple: [{ url: "/logo.png?v=2", type: "image/png" }],
   },
 };
 
