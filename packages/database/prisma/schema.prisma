@@ -97,6 +97,17 @@ model ChatSession {
 
 // ─── CLI device / loopback handoff ────────────────────────────────────────────
 
+/** Short-lived challenge created by CLI `/login` before opening /cli/auth. */
+model CliAuthAttempt {
+  id          String    @id @default(cuid())
+  state       String    @unique
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@map("cli_auth_attempts")
+}
+
 model CliAuthCode {
   id        String    @id @default(cuid())
   userId    String

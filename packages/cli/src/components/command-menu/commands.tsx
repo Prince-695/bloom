@@ -10,6 +10,7 @@ import type { Command } from "./types";
 
 import { performLogin } from "../../auth/device-flow";
 import { clearAuth, getAuth } from "../../lib/auth";
+import { apiClient } from "../../lib/api-client";
 
 // import { openBillingPortal, openUpgradeCheckout } from "../../lib/upgrade";
 
@@ -109,8 +110,17 @@ export const COMMANDS: Command[] = [
         name: "logout",
         description: "Sign out of your account",
         value: "/logout",
-        action: (ctx) => {
+        action: async (ctx) => {
+            if (getAuth()) {
+                try {
+                    await apiClient.auth.cli.logout.$post();
+                } catch {
+                    // Still clear local auth if the revoke call fails
+                }
+            }
+
             clearAuth();
+            await ctx.refreshUsage();
             ctx.toast.show({ variant: "success", message: "Signed out..." });
         },
     },

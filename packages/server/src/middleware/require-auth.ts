@@ -5,6 +5,7 @@ import { db } from "@bloom/database/client";
 export type AuthenticatedEnv = {
   Variables: {
     userId: string;
+    apiTokenId: string;
   };
 };
 
@@ -37,5 +38,6 @@ export const requireAuth: MiddlewareHandler<AuthenticatedEnv> = async (c, next) 
   });
 
   c.set("userId", apiToken.userId);
+  c.set("apiTokenId", apiToken.id);
   await next();
 };

@@ -19,6 +19,10 @@ import { usePromptConfig } from "../providers/prompt-config";
 import { useUsage } from "../providers/usage";
 import { Mode } from "@bloom/shared";
 import { PROMPT_PLACEHOLDER } from "../lib/brand";
+import { getAuth } from "../lib/auth";
+
+const UNAUTHENTICATED_COMMANDS = new Set(["login", "logout", "exit"]);
+const UNAUTHORIZED_MESSAGE = "Unauthorized — run /login first";
 
 const MAX_VISIBLE_MENTIONS = 8;
 const CURRENT_DIRECTORY = process.cwd();
@@ -325,9 +329,14 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
         const text = textarea.plainText.trim();
         if (text.length === 0) return;
 
+        if (!getAuth()) {
+            toast.show({ variant: "error", message: UNAUTHORIZED_MESSAGE });
+            return;
+        }
+
         onSubmit(text);
         textarea.setText("");
-    }, [disabled, onSubmit]);
+    }, [disabled, onSubmit, toast]);
 
     const handleMentionExecute = useCallback((index: number) => {
         const textarea = textareaRef.current;
@@ -361,6 +370,15 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
         if (!textarea || !command) return;
 
         textarea.setText("");
+
+        if (
+            command.action &&
+            !UNAUTHENTICATED_COMMANDS.has(command.name) &&
+            !getAuth()
+        ) {
+            toast.show({ variant: "error", message: UNAUTHORIZED_MESSAGE });
+            return;
+        }
 
         if (command.action) {
             command.action({

@@ -30,7 +30,7 @@ function getErrorMessage(error: unknown) {
 }
 
 /**
- * Opens Bloom web /cli/auth, receives one-time code on loopback, exchanges for API token.
+ * Opens Bloom web /cli/auth (CLI-gated), receives one-time code on loopback, exchanges for API token.
  */
 export async function performLogin() {
   const appUrl = process.env.APP_URL ?? "http://localhost:3001";
@@ -42,6 +42,7 @@ export async function performLogin() {
   return new Promise<{ token: string }>((resolve, reject) => {
     const server = Bun.serve({
       port: 0,
+      hostname: "127.0.0.1",
       async fetch(req) {
         const url = new URL(req.url);
 
@@ -123,11 +124,37 @@ export async function performLogin() {
     }
 
     const state = encodeState({ nonce, port });
-    const authorizeUrl = new URL("/cli/auth", appUrl);
-    authorizeUrl.searchParams.set("port", String(port));
-    authorizeUrl.searchParams.set("state", state);
 
-    void open(authorizeUrl.toString());
+    void (async () => {
+      try {
+        const beginRes = await fetch(`${apiUrl}/auth/cli/begin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ state }),
+        });
+
+        if (!beginRes.ok) {
+          const body = (await beginRes.json().catch(() => null)) as {
+            error?: string;
+          } | null;
+          throw new Error(
+            body?.error ??
+              `Failed to start CLI login (${beginRes.status}) at ${apiUrl}. Redeploy the API with /auth/cli/begin.`,
+          );
+        }
+
+        const authorizeUrl = new URL("/cli/auth", appUrl);
+        authorizeUrl.searchParams.set("port", String(port));
+        authorizeUrl.searchParams.set("state", state);
+        await open(authorizeUrl.toString());
+      } catch (error) {
+        if (!settled) {
+          settled = true;
+          server.stop();
+          reject(error instanceof Error ? error : new Error(getErrorMessage(error)));
+        }
+      }
+    })();
 
     setTimeout(() => {
       if (!settled) {
