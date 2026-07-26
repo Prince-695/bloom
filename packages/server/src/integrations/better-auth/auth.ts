@@ -15,6 +15,7 @@ if (!isSmtpConfigured()) {
  */
 export const auth = betterAuth({
   appName: "Bloom",
+  baseURL: process.env.APP_URL ?? "http://localhost:3001",
   database: prismaAdapter(db, {
     provider: "postgresql",
   }),
@@ -51,10 +52,7 @@ export const auth = betterAuth({
       },
     }),
   ],
-  trustedOrigins: [
-    process.env.APP_URL ?? "http://localhost:3001",
-    process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
-  ].filter(Boolean),
+  trustedOrigins: [process.env.APP_URL ?? "http://localhost:3001"].filter(Boolean),
 });
 
 export type Session = typeof auth.$Infer.Session;
