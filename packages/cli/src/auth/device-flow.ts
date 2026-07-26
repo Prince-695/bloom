@@ -1,5 +1,6 @@
 import open from "open";
 import { saveAuth } from "../lib/auth";
+import { API_URL, APP_URL } from "../lib/config";
 
 const LOGIN_TIMEOUT_MS = 5 * 60 * 1000;
 
@@ -33,8 +34,8 @@ function getErrorMessage(error: unknown) {
  * Opens Bloom web /cli/auth (CLI-gated), receives one-time code on loopback, exchanges for API token.
  */
 export async function performLogin() {
-  const appUrl = process.env.APP_URL ?? "http://localhost:3001";
-  const apiUrl = process.env.API_URL ?? "http://localhost:3000";
+  const appUrl = APP_URL;
+  const apiUrl = API_URL;
 
   const nonce = crypto.randomUUID();
   let settled = false;

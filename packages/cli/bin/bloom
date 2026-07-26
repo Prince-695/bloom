@@ -1,4 +1,8 @@
 #!/usr/bin/env bun
+/**
+ * Dev entry that always loads repo-root .env, then starts the CLI.
+ * Prefer `bun run packages/cli/src/index.tsx` which also loads .env when present.
+ */
 import dotenv from "dotenv";
 import path from "path";
 

@@ -4,6 +4,60 @@ Do these outside the codebase. Code expects the env vars in `.env.example`.
 
 Auth methods: **Google**, **GitHub**, and **Email OTP** (no passwords). OTP emails are sent via SMTP.
 
+## Install CLI (production)
+
+Same style as Claude — install from the Bloom web host (not raw GitHub):
+
+**Linux / macOS / Git Bash**
+
+```bash
+curl -fsSL https://bloom-web-amber.vercel.app/install.sh | bash
+```
+
+**Windows (PowerShell)**
+
+```powershell
+irm https://bloom-web-amber.vercel.app/install.ps1 | iex
+```
+
+This installs `bloom` to `~/.local/bin` (or `%USERPROFILE%\.local\bin` on Windows). Then:
+
+```bash
+bloom
+# in the TUI:
+/login
+```
+
+- Installer files are served from the web app `public/` (`/install.sh`, `/install.ps1`)
+- Binaries still download from GitHub Releases
+- Auth file: `~/.bloom/auth.json`
+- Uninstall: `rm ~/.local/bin/bloom` (Windows: delete `%USERPROFILE%\.local\bin\bloom.exe`)
+- Override backends: `API_URL=https://… APP_URL=https://… bloom`
+
+Release assets: `linux-x64`, `linux-arm64`, `darwin-x64`, `darwin-arm64`, `windows-x64`, `windows-arm64`.
+
+### Publish a CLI release (maintainers)
+
+```bash
+# from repo root — optional local smoke (current host only):
+bun run build:cli:release
+
+git tag v0.1.0
+git push origin v0.1.0
+# GitHub Action "Release CLI" uploads binaries to the release
+```
+
+Smoke after install:
+
+| Check | Pass |
+|-------|------|
+| Cold install | `bloom` runs |
+| Login | `/login` opens Vercel `/cli/auth` |
+| Account switch | `/logout` then `/login` as another user |
+| Auth gate | Other commands need login |
+| `/me` | Account dialog loads |
+| Override | `API_URL=http://localhost:3000 bloom` hits local API |
+
 ## 1. Secrets & local env
 
 - [ ] Copy `.env.example` → `.env` (repo root; Prisma and server load it)
@@ -57,7 +111,8 @@ bun run dev:cli
 - [ ] In CLI, run login → browser `/cli/auth` → returns token to `~/.bloom/auth.json`
 - [ ] Footer should show `10/10 requests remaining · <model> · Build`
 
-## 7. Production (later)
+## 7. Production
 
 - [ ] Deploy API + web + Postgres
 - [ ] Update OAuth redirect URLs and SMTP credentials for production
+- [ ] Tag a `v*` release so `scripts/install.sh` can download CLI binaries
