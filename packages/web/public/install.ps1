@@ -8,10 +8,10 @@ $InstallDir = if ($env:BLOOM_INSTALL_DIR) { $env:BLOOM_INSTALL_DIR } else {
   Join-Path $env:USERPROFILE ".local\bin"
 }
 
-function Get-AssetName {
+function Get-AssetPrefix {
   $arch = $env:PROCESSOR_ARCHITECTURE
   switch -Regex ($arch) {
-    "AMD64|x86_64" { return "bloom-windows-x64.exe" }
+    "AMD64|x86_64" { return "bloom-windows-x64-" }
     "ARM64" {
       throw "Windows ARM64 builds are not published yet. Use an x64 machine, or WSL."
     }
@@ -21,23 +21,33 @@ function Get-AssetName {
   }
 }
 
-$Asset = Get-AssetName
+$Prefix = Get-AssetPrefix
+$LegacyName = "bloom-windows-x64.exe"
 $BinName = "bloom.exe"
 $ReleaseApi = "https://api.github.com/repos/$Repo/releases/latest"
 
 Write-Host "Fetching latest Bloom CLI release…"
 $Release = Invoke-RestMethod -Uri $ReleaseApi -Headers @{ "User-Agent" = "bloom-install" }
-$AssetObj = $Release.assets | Where-Object { $_.name -eq $Asset } | Select-Object -First 1
+
+$AssetObj = $Release.assets |
+  Where-Object { $_.name -like ($Prefix + "*") } |
+  Select-Object -First 1
 
 if (-not $AssetObj) {
-  throw "Could not find asset '$Asset' in release $($Release.tag_name)."
+  $AssetObj = $Release.assets |
+    Where-Object { $_.name -eq $LegacyName } |
+    Select-Object -First 1
+}
+
+if (-not $AssetObj) {
+  throw "Could not find a Windows x64 Bloom binary in release $($Release.tag_name)."
 }
 
 $Tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("bloom-install-" + [guid]::NewGuid().ToString())
 New-Item -ItemType Directory -Path $Tmp | Out-Null
 try {
   $DownloadPath = Join-Path $Tmp $BinName
-  Write-Host "Downloading $Asset…"
+  Write-Host "Downloading $($AssetObj.name)…"
   Invoke-WebRequest -Uri $AssetObj.browser_download_url -OutFile $DownloadPath
 
   New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
@@ -57,6 +67,7 @@ try {
   Write-Host "Next steps:"
   Write-Host "  bloom"
   Write-Host "  /login"
+  Write-Host "  /update   # when a newer release is available"
   Write-Host ""
   Write-Host "Override API endpoints if needed:" -ForegroundColor DarkGray
   Write-Host "  `$env:API_URL='https://…'; `$env:APP_URL='https://…'; bloom" -ForegroundColor DarkGray

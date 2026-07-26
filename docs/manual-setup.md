@@ -26,25 +26,42 @@ This installs `bloom` to `~/.local/bin` (or `%USERPROFILE%\.local\bin` on Window
 bloom
 # in the TUI:
 /login
+/update   # when a newer release is available
 ```
 
 - Installer files are served from the web app `public/` (`/install.sh`, `/install.ps1`)
-- Binaries still download from GitHub Releases
+- Binaries download from **GitHub Releases** (one release per version tag)
+- Soft notice on launch if a newer version exists: `vX.Y.Z available — run /update`
+- `/update` downloads and replaces the binary (opt out: `BLOOM_NO_UPDATE=1`)
 - Auth file: `~/.bloom/auth.json`
 - Uninstall: `rm ~/.local/bin/bloom` (Windows: delete `%USERPROFILE%\.local\bin\bloom.exe`)
 - Override backends: `API_URL=https://… APP_URL=https://… bloom`
 
-Release assets: `linux-x64`, `linux-arm64`, `darwin-arm64`, `windows-x64` (Intel Mac and Windows ARM64 not shipped yet).
+### Release asset naming
+
+Each Git tag (`v0.1.1`, `v0.1.2`, …) creates a **separate** GitHub Release. Assets are versioned:
+
+| Platform | Example (0.1.2) |
+|----------|-----------------|
+| macOS Apple Silicon | `bloom-macos-arm64-0.1.2` |
+| Linux x64 | `bloom-linux-x64-0.1.2` |
+| Linux arm64 | `bloom-linux-arm64-0.1.2` |
+| Windows x64 | `bloom-windows-x64-0.1.2.exe` |
+
+Intel Mac and Windows ARM64 are not shipped yet. Installers match by prefix (e.g. `bloom-macos-arm64-`) under `/releases/latest`.
 
 ### Publish a CLI release (maintainers)
 
 ```bash
-# from repo root — optional local smoke (current host only):
-bun run build:cli:release
+# 1. Bump packages/cli/src/lib/brand.ts → PRODUCT_VERSION = "0.1.2"
+# 2. Commit, then:
+bun run build:cli:release   # optional local smoke
 
-git tag v0.1.0
-git push origin v0.1.0
-# GitHub Action "Release CLI" uploads binaries to the release
+git tag v0.1.2
+git push origin main
+git push origin v0.1.2
+# GitHub Action "Release CLI" uploads versioned binaries to Release v0.1.2
+# Redeploy web if install.sh / install.ps1 changed
 ```
 
 Smoke after install:
@@ -53,6 +70,8 @@ Smoke after install:
 |-------|------|
 | Cold install | `bloom` runs |
 | Login | `/login` opens Vercel `/cli/auth` |
+| Update notice | Toast when a newer tag exists |
+| `/update` | Replaces binary; restart Bloom |
 | Account switch | `/logout` then `/login` as another user |
 | Auth gate | Other commands need login |
 | `/me` | Account dialog loads |

@@ -14,8 +14,9 @@ red() { printf '\033[31m%s\033[0m\n' "$*"; }
 green() { printf '\033[32m%s\033[0m\n' "$*"; }
 dim() { printf '\033[2m%s\033[0m\n' "$*"; }
 
-detect_asset() {
-  local os arch
+# Prefix for versioned assets, e.g. bloom-macos-arm64-
+detect_asset_prefix() {
+  local os arch platform
   case "$(uname -s)" in
     Linux*) os="linux" ;;
     Darwin*) os="darwin" ;;
@@ -35,7 +36,7 @@ detect_asset() {
   esac
 
   if [[ "${os}" == "darwin" && "${arch}" == "x64" ]]; then
-    red "Intel Mac (darwin-x64) builds are not published yet. Use an Apple Silicon Mac, or Linux/Windows."
+    red "Intel Mac builds are not published yet. Use an Apple Silicon Mac, or Linux/Windows."
     exit 1
   fi
 
@@ -44,6 +45,26 @@ detect_asset() {
     exit 1
   fi
 
+  platform="${os}"
+  if [[ "${os}" == "darwin" ]]; then
+    platform="macos"
+  fi
+
+  echo "bloom-${platform}-${arch}-"
+}
+
+# Legacy unversioned names from v0.1.0
+legacy_asset_name() {
+  local os arch
+  case "$(uname -s)" in
+    Linux*) os="linux" ;;
+    Darwin*) os="darwin" ;;
+    MINGW*|MSYS*|CYGWIN*) os="windows" ;;
+  esac
+  case "$(uname -m)" in
+    x86_64|amd64|AMD64) arch="x64" ;;
+    arm64|aarch64|ARM64) arch="arm64" ;;
+  esac
   if [[ "${os}" == "windows" ]]; then
     echo "bloom-${os}-${arch}.exe"
   else
@@ -62,9 +83,10 @@ need_cmd curl
 need_cmd mkdir
 need_cmd mktemp
 
-ASSET="$(detect_asset)"
+PREFIX="$(detect_asset_prefix)"
+LEGACY="$(legacy_asset_name)"
 BIN_NAME="bloom"
-if [[ "${ASSET}" == *.exe ]]; then
+if [[ "${PREFIX}" == bloom-windows-* ]]; then
   BIN_NAME="bloom.exe"
 fi
 
@@ -74,21 +96,33 @@ trap 'rm -rf "${TMP}"' EXIT
 echo "Fetching latest Bloom CLI release…"
 RELEASE_JSON="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest")"
 
+# Prefer versioned asset: bloom-macos-arm64-0.1.2
 DOWNLOAD_URL="$(
   printf '%s' "${RELEASE_JSON}" \
-    | grep -oE "https://[^\"]+/${ASSET}\"" \
+    | grep -oE "\"browser_download_url\":[[:space:]]*\"https://[^\"]+/${PREFIX}[^\"]+\"" \
     | head -n1 \
-    | tr -d '"'
+    | sed -E 's/.*"browser_download_url":[[:space:]]*"([^"]+)".*/\1/'
 )"
+
+# Fall back to legacy unversioned name (v0.1.0)
+if [[ -z "${DOWNLOAD_URL}" ]]; then
+  DOWNLOAD_URL="$(
+    printf '%s' "${RELEASE_JSON}" \
+      | grep -oE "\"browser_download_url\":[[:space:]]*\"https://[^\"]+/${LEGACY}\"" \
+      | head -n1 \
+      | sed -E 's/.*"browser_download_url":[[:space:]]*"([^"]+)".*/\1/'
+  )"
+fi
 
 if [[ -z "${DOWNLOAD_URL}" ]]; then
   TAG="$(printf '%s' "${RELEASE_JSON}" | sed -n 's/.*"tag_name": "\([^"]*\)".*/\1/p' | head -n1)"
-  red "Could not find asset '${ASSET}' in the latest release${TAG:+ (${TAG})}."
-  red "Available assets may not include your platform yet."
+  red "Could not find a Bloom binary for this platform in the latest release${TAG:+ (${TAG})}."
+  red "Looked for prefix '${PREFIX}' (or legacy '${LEGACY}')."
   exit 1
 fi
 
-echo "Downloading ${ASSET}…"
+ASSET_NAME="$(basename "${DOWNLOAD_URL}")"
+echo "Downloading ${ASSET_NAME}…"
 curl -fsSL "${DOWNLOAD_URL}" -o "${TMP}/${BIN_NAME}"
 
 mkdir -p "${INSTALL_DIR}"
@@ -122,6 +156,7 @@ else
   echo "  bloom"
 fi
 echo "  /login"
+echo "  /update   # when a newer release is available"
 echo
 dim "Override API endpoints if needed:"
 dim "  API_URL=https://… APP_URL=https://… bloom"

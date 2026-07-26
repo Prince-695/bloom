@@ -21,7 +21,7 @@ import { Mode } from "@bloom/shared";
 import { PROMPT_PLACEHOLDER } from "../lib/brand";
 import { getAuth } from "../lib/auth";
 
-const UNAUTHENTICATED_COMMANDS = new Set(["login", "logout", "exit"]);
+const UNAUTHENTICATED_COMMANDS = new Set(["login", "logout", "exit", "update"]);
 const UNAUTHORIZED_MESSAGE = "Unauthorized — run /login first";
 
 const MAX_VISIBLE_MENTIONS = 8;
