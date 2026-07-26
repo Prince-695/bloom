@@ -1,0 +1,31 @@
+{
+  "plugins": {
+    "gsap-skills": {
+      "enabled": true
+    },
+    "aceternity-skills": {
+      "enabled": true
+    },
+    "vitest-skills": {
+      "enabled": true
+    },
+    "react-skills": {
+      "enabled": true
+    },
+    "next-skills": {
+      "enabled": true
+    },
+    "tailwind-skills": {
+      "enabled": true
+    },
+    "typescript-skills": {
+      "enabled": true
+    },
+    "eslint-skills": {
+      "enabled": true
+    },
+      "animation-skills": {
+        "enabled": true
+      }
+  }
+}

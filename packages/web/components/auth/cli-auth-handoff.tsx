@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { GalleryVerticalEndIcon } from "lucide-react";
+import { MailIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { BloomLogo } from "@/components/site/bloom-logo";
 import { authClient } from "@/lib/auth-client";
 import {
   Card,
@@ -214,55 +215,39 @@ export function CliAuthHandoff() {
 
   if (gate === "checking") {
     return (
-      <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-col items-center gap-2 text-center">
-          <div className="flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <GalleryVerticalEndIcon />
-          </div>
-          <CardTitle>Connect Bloom CLI</CardTitle>
-          <CardDescription>Checking your CLI login link…</CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center">
+      <AuthShell title="Connect Bloom CLI" description="Checking your CLI login link…">
+        <div className="flex justify-center py-4">
           <Spinner />
-        </CardContent>
-      </Card>
+        </div>
+      </AuthShell>
     );
   }
 
   if (gate === "invalid") {
     return (
-      <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-col items-center gap-2 text-center">
-          <div className="flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <GalleryVerticalEndIcon />
-          </div>
-          <CardTitle>CLI login unavailable</CardTitle>
-          <CardDescription>
+      <AuthShell
+        title="CLI login unavailable"
+        description={
+          <>
             This page only works when started from the Bloom CLI. Run{" "}
             <span className="font-medium text-foreground">/login</span> in the
             terminal, then open the link it provides.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+          </>
+        }
+      />
     );
   }
 
   if (view === "session" && sessionUser) {
     const label = sessionUser.name || sessionUser.email || "your account";
     return (
-      <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-col items-center gap-2 text-center">
-          <div className="flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <GalleryVerticalEndIcon />
-          </div>
-          <CardTitle>Connect Bloom CLI</CardTitle>
-          <CardDescription>
-            Continue as {label}, or choose a different account.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
+      <AuthShell
+        title="Connect Bloom CLI"
+        description={`Continue as ${label}, or choose a different account.`}
+      >
+        <div className="flex flex-col gap-2">
           <Button
-            className="w-full"
+            className="w-full bloom-emboss"
             disabled={handoffPending || pending}
             onClick={() => void completeHandoff()}
           >
@@ -272,146 +257,177 @@ export function CliAuthHandoff() {
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full bloom-brutal-sm"
             disabled={handoffPending || pending}
             onClick={() => void useDifferentAccount()}
           >
             Use a different account
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </AuthShell>
     );
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="flex flex-col items-center gap-2 text-center">
-        <div className="flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <GalleryVerticalEndIcon />
-        </div>
-        <CardTitle>Sign in to Bloom CLI</CardTitle>
-        <CardDescription>
-          {loginStep === "email"
-            ? "Continue with email, Google, or GitHub"
-            : `Enter the code sent to ${email}`}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        {loginStep === "email" ? (
-          <form onSubmit={sendOtp} className="flex flex-col gap-4">
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="cli-email">Email</FieldLabel>
-                <Input
-                  id="cli-email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </Field>
-            </FieldGroup>
-            <Button type="submit" disabled={pending || handoffPending} className="w-full">
-              {pending ? <Spinner data-icon="inline-start" /> : null}
-              Continue with email
-            </Button>
-          </form>
-        ) : (
-          <form onSubmit={verifyOtp} className="flex flex-col gap-4">
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="cli-otp">One-time code</FieldLabel>
-                <InputOTP
-                  id="cli-otp"
-                  maxLength={6}
-                  value={otp}
-                  onChange={setOtp}
+    <AuthShell
+      title="Sign in to Bloom CLI"
+      description={
+        loginStep === "email"
+          ? "Continue with email, Google, or GitHub"
+          : `Enter the code sent to ${email}`
+      }
+      footer="Started from the Bloom CLI. Close this tab if you didn't mean to sign in."
+    >
+      {loginStep === "email" ? (
+        <form onSubmit={sendOtp} className="flex flex-col gap-4">
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="cli-email">Email</FieldLabel>
+              <Input
+                id="cli-email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bloom-inset border-2"
+              />
+            </Field>
+          </FieldGroup>
+          <Button
+            type="submit"
+            disabled={pending || handoffPending}
+            className="w-full bloom-emboss"
+          >
+            {pending ? (
+              <Spinner data-icon="inline-start" />
+            ) : (
+              <MailIcon data-icon="inline-start" />
+            )}
+            Continue with email
+          </Button>
+        </form>
+      ) : (
+        <form onSubmit={verifyOtp} className="flex flex-col gap-4">
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="cli-otp">One-time code</FieldLabel>
+              <InputOTP
+                id="cli-otp"
+                maxLength={6}
+                value={otp}
+                onChange={setOtp}
+                disabled={pending || handoffPending}
+              >
+                <InputOTPGroup className="gap-2">
+                  <InputOTPSlot index={0} className="bloom-brutal-sm" />
+                  <InputOTPSlot index={1} className="bloom-brutal-sm" />
+                  <InputOTPSlot index={2} className="bloom-brutal-sm" />
+                  <InputOTPSlot index={3} className="bloom-brutal-sm" />
+                  <InputOTPSlot index={4} className="bloom-brutal-sm" />
+                  <InputOTPSlot index={5} className="bloom-brutal-sm" />
+                </InputOTPGroup>
+              </InputOTP>
+              <FieldDescription>
+                Didn&apos;t get it?{" "}
+                <button
+                  type="button"
+                  className="font-semibold text-primary underline underline-offset-4"
                   disabled={pending || handoffPending}
+                  onClick={() => void requestOtp()}
                 >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-                <FieldDescription>
-                  Didn&apos;t get it?{" "}
-                  <button
-                    type="button"
-                    className="underline underline-offset-4"
-                    disabled={pending || handoffPending}
-                    onClick={() => void requestOtp()}
-                  >
-                    Resend code
-                  </button>
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
+                  Resend code
+                </button>
+              </FieldDescription>
+            </Field>
+          </FieldGroup>
+          <Button
+            type="submit"
+            disabled={pending || handoffPending || otp.length < 6}
+            className="w-full bloom-emboss"
+          >
+            {pending || handoffPending ? (
+              <Spinner data-icon="inline-start" />
+            ) : null}
+            Verify and connect CLI
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            disabled={pending || handoffPending}
+            onClick={() => {
+              setLoginStep("email");
+              setOtp("");
+            }}
+          >
+            Use a different email
+          </Button>
+        </form>
+      )}
+
+      {loginStep === "email" ? (
+        <>
+          <div className="flex items-center gap-3">
+            <Separator className="flex-1 bg-bloom-separator" />
+            <span className="font-mono text-xs text-muted-foreground">or</span>
+            <Separator className="flex-1 bg-bloom-separator" />
+          </div>
+          <div className="flex flex-col gap-2">
             <Button
-              type="submit"
-              disabled={pending || handoffPending || otp.length < 6}
-              className="w-full"
+              type="button"
+              variant="outline"
+              className="w-full bloom-brutal-sm"
+              disabled={pending || handoffPending}
+              onClick={() => void signInWithGoogle()}
             >
-              {pending || handoffPending ? (
-                <Spinner data-icon="inline-start" />
-              ) : null}
-              Verify and connect CLI
+              Continue with Google
             </Button>
             <Button
               type="button"
-              variant="ghost"
-              className="w-full"
+              variant="outline"
+              className="w-full bloom-brutal-sm"
               disabled={pending || handoffPending}
-              onClick={() => {
-                setLoginStep("email");
-                setOtp("");
-              }}
+              onClick={() => void signInWithGitHub()}
             >
-              Use a different email
+              Continue with GitHub
             </Button>
-          </form>
-        )}
+          </div>
+        </>
+      ) : null}
+    </AuthShell>
+  );
+}
 
-        {loginStep === "email" ? (
-          <>
-            <div className="flex items-center gap-3">
-              <Separator className="flex-1" />
-              <span className="text-xs text-muted-foreground">or</span>
-              <Separator className="flex-1" />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                disabled={pending || handoffPending}
-                onClick={() => void signInWithGoogle()}
-              >
-                Continue with Google
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                disabled={pending || handoffPending}
-                onClick={() => void signInWithGitHub()}
-              >
-                Continue with GitHub
-              </Button>
-            </div>
-          </>
-        ) : null}
-      </CardContent>
-      <CardFooter className="justify-center">
-        <FieldDescription>
-          Started from the Bloom CLI. Close this tab if you didn&apos;t mean to
-          sign in.
-        </FieldDescription>
-      </CardFooter>
+function AuthShell({
+  title,
+  description,
+  footer,
+  children,
+}: {
+  title: string;
+  description: React.ReactNode;
+  footer?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <Card className="bloom-brutal relative w-full max-w-md overflow-hidden rounded-xl bg-bloom-surface/95 bloom-emboss">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-linear-to-r from-bloom-plan via-primary to-bloom-gold" />
+      <CardHeader className="flex flex-col items-center gap-3 text-center">
+        <BloomLogo href="/" size={40} />
+        <div className="flex flex-col gap-1">
+          <CardTitle className="font-display text-2xl font-bold">{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </div>
+      </CardHeader>
+      {children ? (
+        <CardContent className="flex flex-col gap-4">{children}</CardContent>
+      ) : null}
+      {footer ? (
+        <CardFooter className="justify-center">
+          <FieldDescription>{footer}</FieldDescription>
+        </CardFooter>
+      ) : null}
     </Card>
   );
 }
