@@ -20,9 +20,8 @@ jobs:
           - runner: ubuntu-24.04-arm
             asset: linux-arm64
             artifact: bloom-linux-arm64
-          - runner: macos-13
-            asset: darwin-x64
-            artifact: bloom-darwin-x64
+          # macos-13 (Intel) often queues forever on GitHub-hosted runners.
+          # Apple Silicon covers current Mac installs; Intel Mac not shipped.
           - runner: macos-latest
             asset: darwin-arm64
             artifact: bloom-darwin-arm64

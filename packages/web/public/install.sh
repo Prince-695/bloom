@@ -34,6 +34,16 @@ detect_asset() {
       ;;
   esac
 
+  if [[ "${os}" == "darwin" && "${arch}" == "x64" ]]; then
+    red "Intel Mac (darwin-x64) builds are not published yet. Use an Apple Silicon Mac, or Linux/Windows."
+    exit 1
+  fi
+
+  if [[ "${os}" == "windows" && "${arch}" == "arm64" ]]; then
+    red "Windows ARM64 builds are not published yet. Use an x64 machine, or WSL."
+    exit 1
+  fi
+
   if [[ "${os}" == "windows" ]]; then
     echo "bloom-${os}-${arch}.exe"
   else

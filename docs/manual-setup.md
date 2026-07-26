@@ -34,7 +34,7 @@ bloom
 - Uninstall: `rm ~/.local/bin/bloom` (Windows: delete `%USERPROFILE%\.local\bin\bloom.exe`)
 - Override backends: `API_URL=https://… APP_URL=https://… bloom`
 
-Release assets: `linux-x64`, `linux-arm64`, `darwin-x64`, `darwin-arm64`, `windows-x64` (Windows ARM64 not shipped yet).
+Release assets: `linux-x64`, `linux-arm64`, `darwin-arm64`, `windows-x64` (Intel Mac and Windows ARM64 not shipped yet).
 
 ### Publish a CLI release (maintainers)
 
