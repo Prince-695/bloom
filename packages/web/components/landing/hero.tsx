@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { BookOpenIcon, TerminalIcon } from "lucide-react";
 
 import { TerminalChassis } from "@/components/landing/terminal-chassis";
+import { BloomLogo } from "@/components/site/bloom-logo";
 import { Button } from "@/components/ui/button";
 import { Button as MovingBorderButton } from "@/components/ui/moving-border";
 
@@ -46,9 +47,12 @@ export function LandingHero() {
 
       <div className="relative mx-auto grid w-full max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_1.05fr] lg:gap-12 lg:py-20">
         <div className="flex flex-col items-start gap-7">
-          <p className="hero-brand font-mono text-xs tracking-[0.35em] text-bloom-gold uppercase">
-            Bloom
-          </p>
+          <div className="hero-brand flex items-center gap-4">
+            <BloomLogo href={null} showWordmark={false} size={72} />
+            <p className="font-mono text-xs tracking-[0.35em] text-bloom-gold uppercase">
+              Bloom
+            </p>
+          </div>
 
           <div className="hero-line flex flex-col gap-4">
             <h1 className="font-display text-[clamp(2.75rem,7vw,4.75rem)] leading-[0.95] font-bold tracking-tight text-foreground">

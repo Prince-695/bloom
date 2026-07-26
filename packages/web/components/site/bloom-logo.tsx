@@ -3,9 +3,12 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
+/** Cache-bust when the public asset is replaced (Next/browser can keep old /logo.png). */
+export const BLOOM_LOGO_SRC = "/logo.png?v=2";
+
 type BloomLogoProps = {
   className?: string;
-  href?: string;
+  href?: string | null;
   showWordmark?: boolean;
   size?: number;
 };
@@ -18,14 +21,18 @@ export function BloomLogo({
 }: BloomLogoProps) {
   const mark = (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <span className="bloom-brutal-sm relative inline-flex shrink-0 overflow-hidden rounded-md bg-bloom-surface bloom-emboss">
+      <span
+        className="bloom-brutal-sm relative inline-flex shrink-0 overflow-hidden rounded-md bg-black bloom-emboss"
+        style={{ width: size, height: size }}
+      >
         <Image
-          src="/logo.png"
+          src={BLOOM_LOGO_SRC}
           alt="Bloom"
           width={size}
           height={size}
-          className="object-cover"
+          className="size-full object-contain"
           priority
+          unoptimized
         />
       </span>
       {showWordmark ? (
@@ -40,7 +47,10 @@ export function BloomLogo({
   if (!href) return mark;
 
   return (
-    <Link href={href} className="outline-none focus-visible:ring-2 focus-visible:ring-ring">
+    <Link
+      href={href}
+      className="outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
       {mark}
     </Link>
   );

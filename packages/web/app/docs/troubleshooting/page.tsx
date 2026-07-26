@@ -63,6 +63,43 @@ export default function DocsTroubleshootingPage() {
         </DocsP>
       </DocsSection>
 
+      <DocsSection title="/update fails or never sees a new version">
+        <DocsList
+          items={[
+            <>
+              Confirm a newer GitHub Release exists under{" "}
+              <a
+                href="https://github.com/Prince-695/bloom/releases"
+                className="text-primary underline-offset-4 hover:underline"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Releases
+              </a>
+              .
+            </>,
+            <>
+              Unset <InlineCode>BLOOM_NO_UPDATE</InlineCode> if you disabled
+              updates.
+            </>,
+            <>
+              Re-run the{" "}
+              <Link
+                href="/docs/install"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                one-line installer
+              </Link>{" "}
+              as a fallback.
+            </>,
+            <>
+              After a successful <InlineCode>/update</InlineCode>, fully quit
+              Bloom and start it again.
+            </>,
+          ]}
+        />
+      </DocsSection>
+
       <DocsSection title="Wrong API / local development">
         <DocsP>
           Point the CLI at local services:

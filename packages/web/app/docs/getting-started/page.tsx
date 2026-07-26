@@ -61,7 +61,32 @@ export default function DocsGettingStartedPage() {
         </DocsP>
       </DocsSection>
 
-      <DocsSection title="4. Send a prompt">
+      <DocsSection title="4. Keep Bloom up to date">
+        <DocsP>
+          When a newer release ships, Bloom may toast{" "}
+          <InlineCode>vX.Y.Z available — run /update</InlineCode>. Apply it with:
+        </DocsP>
+        <CodeBlock label="bloom" code={`/update`} />
+        <DocsP>
+          Then restart the CLI. See{" "}
+          <Link
+            href="/docs/commands#update"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            /update
+          </Link>{" "}
+          and the{" "}
+          <Link
+            href="/docs/install"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            install guide
+          </Link>
+          .
+        </DocsP>
+      </DocsSection>
+
+      <DocsSection title="5. Send a prompt">
         <DocsList
           items={[
             "Type a natural-language request in the input bar.",
@@ -80,7 +105,7 @@ export default function DocsGettingStartedPage() {
         />
       </DocsSection>
 
-      <DocsSection title="5. Read the footer">
+      <DocsSection title="6. Read the footer">
         <DocsP>
           The footer shows remaining requests, the active model, and the active
           mode (Build or Plan). Example shape:

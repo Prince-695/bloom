@@ -130,10 +130,10 @@ export const DOCS_COMMANDS: DocsCommand[] = [
     ],
     notes: [
       "Login times out after 5 minutes if the browser step is not completed.",
-      "Works without an existing session (along with /logout and /exit).",
+      "Works without an existing session (along with /logout, /update, and /exit).",
       "Auth file permissions: directory 0700, file 0600.",
     ],
-    related: ["/logout", "/me", "/docs/auth"],
+    related: ["/logout", "/me", "/update", "/docs/auth"],
   },
   {
     name: "logout",
@@ -148,6 +148,28 @@ export const DOCS_COMMANDS: DocsCommand[] = [
       "Run /login again to switch accounts or reconnect.",
     ],
     related: ["/login", "/me", "/docs/auth"],
+  },
+  {
+    name: "update",
+    value: "/update",
+    summary: "Update Bloom CLI to the latest release",
+    description:
+      "Checks GitHub Releases for a newer Bloom CLI binary for your OS/arch, downloads it, and replaces the installed executable. Works without being signed in. After a successful update, restart Bloom so the new binary loads.",
+    requiresAuth: false,
+    steps: [
+      "Type /update and press Enter.",
+      "Bloom shows Checking for updates… then downloads if a newer version exists.",
+      "On success you see Updated to X.Y.Z — restart Bloom.",
+      "Quit with /exit (or Ctrl+C) and run bloom again.",
+    ],
+    notes: [
+      "If you are already on the latest release: Already on X.Y.Z.",
+      "On launch, Bloom may toast vX.Y.Z available — run /update when a newer release exists (soft notice only — it does not auto-replace).",
+      "Disable update checks and /update with BLOOM_NO_UPDATE=1.",
+      "Release assets look like bloom-macos-arm64-0.1.2 (versioned per GitHub Release tag).",
+      "You can also re-run the curl/irm installer from the Install docs to get the latest binary.",
+    ],
+    related: ["/docs/install", "/exit"],
   },
   {
     name: "exit",

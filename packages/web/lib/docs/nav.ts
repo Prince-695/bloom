@@ -22,6 +22,7 @@ export const DOCS_NAV: DocsNavItem[] = [
       { href: "/docs/commands#theme", label: "/theme" },
       { href: "/docs/commands#login", label: "/login" },
       { href: "/docs/commands#logout", label: "/logout" },
+      { href: "/docs/commands#update", label: "/update" },
       { href: "/docs/commands#exit", label: "/exit" },
     ],
   },
