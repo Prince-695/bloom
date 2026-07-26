@@ -44,10 +44,17 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+        env:
+          # Skip Prisma postinstall needing a real DB (CI=true also skips via server postinstall)
+          CI: "true"
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/bloom
 
       - name: Build CLI binary
         shell: bash
         run: bash scripts/build-cli-release.sh ${{ matrix.asset }}
+        env:
+          CI: "true"
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/bloom
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
