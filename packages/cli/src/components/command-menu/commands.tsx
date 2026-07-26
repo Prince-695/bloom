@@ -11,6 +11,7 @@ import type { Command } from "./types";
 import { performLogin } from "../../auth/device-flow";
 import { clearAuth, getAuth } from "../../lib/auth";
 import { apiClient } from "../../lib/api-client";
+import { applyUpdate, checkForUpdate, updatesDisabled } from "../../lib/update";
 
 // import { openBillingPortal, openUpgradeCheckout } from "../../lib/upgrade";
 
@@ -122,6 +123,45 @@ export const COMMANDS: Command[] = [
             clearAuth();
             await ctx.refreshUsage();
             ctx.toast.show({ variant: "success", message: "Signed out..." });
+        },
+    },
+    {
+        name: "update",
+        description: "Update Bloom CLI to the latest release",
+        value: "/update",
+        action: async (ctx) => {
+            if (updatesDisabled()) {
+                ctx.toast.show({
+                    message: "Updates disabled (BLOOM_NO_UPDATE)",
+                });
+                return;
+            }
+
+            ctx.toast.show({ message: "Checking for updates…" });
+
+            try {
+                const info = await checkForUpdate();
+                if (!info.available) {
+                    ctx.toast.show({
+                        variant: "success",
+                        message: `Already on ${info.currentVersion}`,
+                    });
+                    return;
+                }
+
+                ctx.toast.show({
+                    message: `Downloading v${info.latestVersion}…`,
+                });
+                await applyUpdate(info);
+                ctx.toast.show({
+                    variant: "success",
+                    message: `Updated to ${info.latestVersion} — restart Bloom`,
+                });
+            } catch (error) {
+                const message =
+                    error instanceof Error ? error.message : "Update failed";
+                ctx.toast.show({ variant: "error", message });
+            }
         },
     },
     // {

@@ -8,6 +8,7 @@ import { ThemedRoot } from "./themed-root";
 import { PromptConfigProvider } from "../providers/prompt-config";
 import { UsageProvider } from "../providers/usage";
 import { WelcomeScreen } from "../components/welcome-screen";
+import { UpdateNotifier } from "../components/update-notifier";
 
 function LaunchGate({ children }: { children: ReactNode }) {
   const [showWelcome, setShowWelcome] = useState(true);
@@ -16,7 +17,12 @@ function LaunchGate({ children }: { children: ReactNode }) {
     return <WelcomeScreen onDismiss={() => setShowWelcome(false)} />;
   }
 
-  return children;
+  return (
+    <>
+      <UpdateNotifier />
+      {children}
+    </>
+  );
 }
 
 export function RootLayout() {
