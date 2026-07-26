@@ -26,12 +26,11 @@ jobs:
           - runner: macos-latest
             asset: darwin-arm64
             artifact: bloom-darwin-arm64
+          # OpenTUI needs a true native ARM host. GitHub's windows-11-arm
+          # currently reports as windows-x64 under bash, so ARM Windows is omitted.
           - runner: windows-latest
             asset: windows-x64
             artifact: bloom-windows-x64.exe
-          - runner: windows-11-arm
-            asset: windows-arm64
-            artifact: bloom-windows-arm64.exe
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout

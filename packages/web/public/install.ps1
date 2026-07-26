@@ -12,7 +12,9 @@ function Get-AssetName {
   $arch = $env:PROCESSOR_ARCHITECTURE
   switch -Regex ($arch) {
     "AMD64|x86_64" { return "bloom-windows-x64.exe" }
-    "ARM64" { return "bloom-windows-arm64.exe" }
+    "ARM64" {
+      throw "Windows ARM64 builds are not published yet. Use an x64 machine, or WSL."
+    }
     default {
       throw "Unsupported architecture: $arch"
     }
