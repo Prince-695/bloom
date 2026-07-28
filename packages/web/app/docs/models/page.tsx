@@ -25,7 +25,7 @@ export default function DocsModelsPage() {
         />
         <DocsP>
           Default when nothing is chosen:{" "}
-          <InlineCode>gpt-5.4-nano</InlineCode>.
+          <InlineCode>gemini-3.5-flash</InlineCode>.
         </DocsP>
       </DocsSection>
 

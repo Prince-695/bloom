@@ -18,15 +18,12 @@ export const DOCS_INSTALL = {
 };
 
 export const DOCS_MODELS = [
-  { id: "claude-sonnet-4-6", provider: "Anthropic", note: "Balanced Claude Sonnet" },
-  { id: "claude-haiku-4-5", provider: "Anthropic", note: "Faster / cheaper Claude" },
-  { id: "claude-opus-4-6", provider: "Anthropic", note: "Highest-capability Claude" },
-  { id: "gpt-5.4", provider: "OpenAI", note: "Flagship GPT" },
-  { id: "gpt-5.4-mini", provider: "OpenAI", note: "Mid-tier GPT" },
-  { id: "gpt-5.4-nano", provider: "OpenAI", note: "Default model — fast & cheap" },
-  { id: "gpt-5-mini", provider: "OpenAI", note: "Compact GPT-5 mini" },
-  { id: "gemini-3.5-flash", provider: "Google", note: "Gemini Flash (newer)" },
+  { id: "gemini-3.5-flash", provider: "Google", note: "Default — Gemini Flash with thinking" },
   { id: "gemini-2.5-flash", provider: "Google", note: "Gemini Flash" },
+  { id: "openai/gpt-oss-120b", provider: "Groq", note: "GPT-OSS 120B reasoning (high effort)" },
+  { id: "openai/gpt-oss-20b", provider: "Groq", note: "GPT-OSS 20B reasoning (high effort)" },
+  { id: "qwen/qwen3.6-27b", provider: "Groq", note: "Qwen 3.6 27B reasoning" },
+  { id: "llama-3.3-70b-versatile", provider: "Groq", note: "Llama 3.3 70B" },
 ] as const;
 
 /** Primary accent per CLI theme — used for docs capsules. */

@@ -74,8 +74,8 @@ export const DOCS_COMMANDS: DocsCommand[] = [
       "Press Enter to select it. The footer shows the active model.",
     ],
     notes: [
-      "Default model is gpt-5.4-nano when nothing else is selected.",
-      "Providers include Anthropic, OpenAI, and Google.",
+      "Default model is gemini-3.5-flash when nothing else is selected.",
+      "Providers include Google and Groq.",
     ],
     related: ["/docs/models"],
   },

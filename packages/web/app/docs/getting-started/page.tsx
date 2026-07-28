@@ -112,7 +112,7 @@ export default function DocsGettingStartedPage() {
         </DocsP>
         <CodeBlock
           label="footer"
-          code={`10/10 requests remaining · gpt-5.4-nano · Build`}
+          code={`10/10 requests remaining · gemini-3.5-flash · Build`}
         />
         <DocsList
           items={[

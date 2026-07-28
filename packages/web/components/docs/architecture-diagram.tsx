@@ -245,7 +245,7 @@ export function ArchitectureDiagram() {
           fill="var(--muted-foreground)"
           style={{ fontSize: 11, fontFamily: "var(--font-mono)" }}
         >
-          Anthropic · OpenAI · Google
+          Google · Groq
         </text>
         <text
           x="760"

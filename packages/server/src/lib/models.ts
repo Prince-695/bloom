@@ -1,6 +1,5 @@
-import { anthropic } from "@ai-sdk/anthropic";
-import { openai } from "@ai-sdk/openai";
-import { google } from "@ai-sdk/google"; 
+import { google } from "@ai-sdk/google";
+import { groq } from "@ai-sdk/groq";
 import {
   findSupportedChatModel,
   type SupportedChatModel,
@@ -10,9 +9,8 @@ import {
 import type { ProviderOptions } from "@ai-sdk/provider-utils";
 import type { LanguageModel } from "ai";
 
-type AnthropicModelId = Extract<SupportedChatModel, { provider: "anthropic" }>["id"];
-type OpenAIModelId = Extract<SupportedChatModel, { provider: "openai" }>["id"];
 type GeminiModelId = Extract<SupportedChatModel, { provider: "google" }>["id"];
+type GroqModelId = Extract<SupportedChatModel, { provider: "groq" }>["id"];
 
 export type ResolvedModel = {
   model: LanguageModel;
@@ -21,43 +19,13 @@ export type ResolvedModel = {
   providerOptions?: ProviderOptions;
 };
 
-const ANTHROPIC_PROVIDER_OPTIONS: Partial<Record<AnthropicModelId, ProviderOptions>> = {
-  "claude-opus-4-6": {
-    anthropic: {
-      thinking: {
-        type: "enabled",
-        budgetTokens: 10000,
-      }
-    },
-  },
-  "claude-sonnet-4-6": {
-    anthropic: {
-      thinking: {
-        type: "enabled",
-        budgetTokens: 10000,
-      },
-    },
-  },
-};
-
-const OPENAI_PROVIDER_OPTIONS: Partial<Record<OpenAIModelId, ProviderOptions>> = {
-  "gpt-5.4-nano": {
-    openai: {
-      // thinking: {
-        reasoningEffort: "high",
-        reasoningSummary: "auto",
-      // }
-    },
-  },
-};
-
 const GOOGLE_PROVIDER_OPTIONS: Partial<Record<GeminiModelId, ProviderOptions>> = {
   "gemini-3.5-flash": {
     google: {
       thinkingConfig: {
         thinkingLevel: "high",
         includeThoughts: true,
-      }
+      },
     },
   },
   "gemini-2.5-flash": {
@@ -65,35 +33,42 @@ const GOOGLE_PROVIDER_OPTIONS: Partial<Record<GeminiModelId, ProviderOptions>> =
       thinkingConfig: {
         thinkingBudget: 8192,
         includeThoughts: true,
-      }
+      },
+    },
+  },
+};
+
+// Groq reasoningEffort is model-specific:
+// - GPT-OSS: "low" | "medium" | "high"
+// - Qwen 3.6 27B: "none" | "default"
+// Use "parsed" so reasoning is a separate field (required with tool calling).
+const GROQ_PROVIDER_OPTIONS: Partial<Record<GroqModelId, ProviderOptions>> = {
+  "openai/gpt-oss-120b": {
+    groq: {
+      reasoningFormat: "parsed",
+      reasoningEffort: "high",
+    },
+  },
+  "openai/gpt-oss-20b": {
+    groq: {
+      reasoningFormat: "parsed",
+      reasoningEffort: "high",
+    },
+  },
+  "qwen/qwen3.6-27b": {
+    groq: {
+      reasoningFormat: "parsed",
+      reasoningEffort: "default",
     },
   },
 };
 
 function assertUnsupportedProvider(provider: never): never {
   throw new Error(`Unsupported provider: ${provider}`);
-};
-
-function resolveAnthropicModel(modelId: AnthropicModelId): ResolvedModel {
-  return {
-    model: anthropic(modelId),
-    provider: "anthropic",
-    modelId,
-    providerOptions: ANTHROPIC_PROVIDER_OPTIONS[modelId],
-  };
-};
-
-function resolveOpenAIModel(modelId: OpenAIModelId): ResolvedModel {
-  return {
-    model: openai(modelId),
-    provider: "openai",
-    modelId,
-    providerOptions: OPENAI_PROVIDER_OPTIONS[modelId],
-  };
-};
+}
 
 function resolveGoogleModel(modelId: GeminiModelId): ResolvedModel {
-    return {
+  return {
     model: google(modelId),
     provider: "google",
     modelId,
@@ -101,24 +76,31 @@ function resolveGoogleModel(modelId: GeminiModelId): ResolvedModel {
   };
 }
 
+function resolveGroqModel(modelId: GroqModelId): ResolvedModel {
+  return {
+    model: groq(modelId),
+    provider: "groq",
+    modelId,
+    providerOptions: GROQ_PROVIDER_OPTIONS[modelId],
+  };
+}
+
 function resolveSupportedChatModel(model: SupportedChatModel): ResolvedModel {
   const provider = model.provider;
 
   switch (provider) {
-    case "anthropic":
-      return resolveAnthropicModel(model.id);
-    case "openai":
-      return resolveOpenAIModel(model.id);
     case "google":
-        return resolveGoogleModel(model.id);
+      return resolveGoogleModel(model.id);
+    case "groq":
+      return resolveGroqModel(model.id);
     default:
       return assertUnsupportedProvider(provider);
   }
-};
+}
 
 export function isSupportedChatModel(modelId: string): modelId is SupportedChatModelId {
   return findSupportedChatModel(modelId) != null;
-};
+}
 
 export function resolveChatModel(modelId: string): ResolvedModel {
   const model = findSupportedChatModel(modelId);
